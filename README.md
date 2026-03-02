@@ -246,3 +246,5 @@ Le tecnologie utilizzate sono state scelte per:
 * rispecchiare soluzioni reali adottate in ambito aziendale
 
 L’obiettivo non è la quantità di strumenti, ma l’uso consapevole di quelli realmente necessari.
+
+---
