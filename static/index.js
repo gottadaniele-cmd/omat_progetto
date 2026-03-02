@@ -3,6 +3,22 @@
 $(document).ready(function () {
     const btnLogin = document.querySelector('#btnLogin')
     const btnLogout = document.querySelector('#btnLogout')
+    const icons = document.querySelectorAll('.icon')
+    function updateIcons() {
+        icons.forEach(icon => {
+            if (window.innerWidth < 600) {
+                icon.style.display = 'inline-block';
+                icon.style.fontSize = '20px';
+            } else {
+                icon.style.display = 'none';
+            }
+        });
+    }
+    
+    updateIcons();
+    
+    window.addEventListener('resize', updateIcons);
+
     btnLogout.style.display = 'none'
     let h3
 

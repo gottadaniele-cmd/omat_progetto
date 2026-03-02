@@ -9,6 +9,7 @@
 
   <script src="./jquery-3.5.1.min.js"></script>
   <script type="text/javascript" src="index.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <div class="modal-overlay" id="loginModal">
@@ -113,14 +114,17 @@ C318.115,0,375.068,22.126,419.404,58.936z" style="fill:#F14336;"></path>
         </button>
         <hr>
         <button id="order-button" class="button">
+          <i data-lucide="clipboard-list" class="icon"></i>
           <p class="text">Prenota il tuo ordine</p>
           <span class="badge">5</span>
         </button>
         <button id="stage-button" class="button">
+          <i data-lucide="graduation-cap" class="icon"></i>
           <p class="text">Richiedi di fare il PCTO da noi</p>
           <span class="badge">2</span>
         </button>
         <button id="contact-button" class="button">
+          <i data-lucide="info" class="icon"></i>
           <p class="text">Chi siamo e contatti</p>
         </button>
       </div>
@@ -145,6 +149,8 @@ C318.115,0,375.068,22.126,419.404,58.936z" style="fill:#F14336;"></path>
     </div>
   </div>
 </body>
+
+<script>lucide.createIcons();</script>
 
 
 </html>
