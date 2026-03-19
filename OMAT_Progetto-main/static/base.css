@@ -1,0 +1,483 @@
+/* ============================================================
+   BASE.CSS — OMAT
+   Contiene: font, variabili, body, container, sidebar, modal
+   Escluso: stili del contenuto principale (hero, testi, ecc.)
+   ============================================================ */
+
+
+/* ---------- FONT ---------- */
+
+@font-face {
+  font-family: 'Nebula';
+  src: url('./fonts/Nebula-Regular.otf') format('opentype'),
+       url('./fonts/Nebula-Hollow.otf') format('opentype');
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Jura';
+  src: url('./fonts/JuraMedium.ttf') format('opentype');
+  font-weight: 500;
+  font-display: swap;
+}
+
+
+/* ---------- VARIABILI ---------- */
+
+:root {
+  --primary:       #2563EB;
+  --primary-dark:  #1E40AF;
+  --primary-light: #60A5FA;
+
+  --black-tech: #0B0F14;
+  --gray-steel: #9CA3AF;
+  --gray-dark:  #374151;
+  --gray-light: #E5E7EB;
+  --white-cold: #F9FAFB;
+
+  --white-cold-rgb: 249, 250, 251;
+
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow-soft:  0 8px 32px rgba(0, 0, 0, 0.25);
+
+  --sidebar-width:           220px;
+  --sidebar-width-collapsed: 80px;
+}
+
+
+/* ---------- BASE ---------- */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: 'Nebula', sans-serif;
+}
+
+p {
+  font-family: 'Jura', sans-serif;
+}
+
+li, span, button, input {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+::placeholder {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+               Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+
+/* ---------- CONTAINER ---------- */
+
+.container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+
+/* ---------- SIDEBAR ---------- */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-width);
+  margin-top: 2vh;
+  margin-left: 2vw;
+  height: 100dvh;
+  text-align: center;
+  color: var(--black-tech);
+  padding: 12px 8px;
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+
+.glass {
+  background: rgba(var(--white-cold-rgb), 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 32px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border: 1px solid rgba(var(--white-cold-rgb), 0.25);
+  box-shadow: var(--shadow-soft);
+}
+
+.title {
+  font-size: 48px;
+  margin-bottom: 36px;
+}
+
+.sidebar a {
+  text-decoration: none;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  width: 90%;
+  background-color: var(--gray-light);
+  margin: 16px auto;
+}
+
+/* Bottoni sidebar condivisi */
+.button,
+.login-button,
+.logout-button {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  margin-bottom: 6px;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  transition: 400ms;
+  padding: 0 12px;
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+.login-button {
+  background-color: var(--gray-light);
+}
+.login-button .text {
+  color: var(--gray-dark);
+  font-weight: 700;
+  font-size: 15px;
+  transition: 400ms;
+}
+.login-button:hover {
+  background-color: var(--gray-dark);
+}
+.login-button:hover .text {
+  color: var(--white-cold);
+}
+
+.button {
+  background-color: var(--bg-buttons);
+}
+.button .text {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 15px;
+  transition: 200ms;
+}
+.button:hover {
+  background-color: var(--gray-dark);
+}
+.button:hover .text {
+  color: var(--white-cold);
+}
+
+.logout-button {
+  margin-top: auto;
+  margin-bottom: 20px;
+  background-color: #fac3c3;
+}
+.logout-button .text {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 15px;
+  transition: 400ms;
+}
+.logout-button:hover {
+  background-color: #db3d3d;
+}
+.logout-button:hover .text {
+  color: var(--white-cold);
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: 0;
+  background-color: #F97316;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 12px;
+}
+
+.icon {
+  display: none;
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+
+/* ---------- MAIN CONTENT ---------- */
+
+.main-content {
+  margin-left: calc(var(--sidebar-width) + 2vw + 16px);
+  flex: 1;
+  min-width: 0;
+  padding: 2px 16px 2px 2px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+
+/* ---------- MODAL ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--white-cold);
+  padding: 30px;
+  width: min(450px, 90vw);
+  border-radius: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+               Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  box-sizing: border-box;
+}
+
+.form button {
+  align-self: flex-end;
+}
+
+.flex-column > label {
+  color: #151717;
+  font-weight: 600;
+}
+
+.inputForm {
+  border: 1.5px solid var(--gray-light);
+  border-radius: 10px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  transition: 0.2s ease-in-out;
+  background-color: white;
+}
+
+.inputForm:focus-within {
+  border: 1.5px solid var(--primary);
+}
+
+.input {
+  margin-left: 10px;
+  border-radius: 10px;
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+.input:focus {
+  outline: none;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.flex-row > div > label {
+  font-size: 14px;
+  color: var(--black-tech);
+  font-weight: 400;
+}
+
+.span {
+  font-size: 14px;
+  margin-left: 5px;
+  color: var(--primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.button-submit {
+  margin: 20px 0 10px 0;
+  background-color: #151717;
+  border: none;
+  color: var(--white-cold);
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 10px;
+  height: 50px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.p {
+  text-align: center;
+  color: var(--black-tech);
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.btn {
+  margin-top: 10px;
+  width: 100%;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 500;
+  gap: 10px;
+  border: 1px solid var(--gray-light);
+  background-color: var(--gray-light);
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.btn:hover {
+  border: 1px solid var(--primary);
+}
+
+
+/* ---------- RESPONSIVE ---------- */
+
+/* Tablet landscape (900px–1199px): sidebar collassata */
+@media screen and (max-width: 1199px) {
+  :root {
+    --sidebar-width: var(--sidebar-width-collapsed);
+  }
+
+  .sidebar {
+    width: var(--sidebar-width-collapsed);
+    padding: 8px;
+    margin-left: 1vw;
+  }
+
+  .title {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .button .text,
+  .logout-button .text,
+  .login-button .text {
+    display: none;
+  }
+
+  .button,
+  .login-button,
+  .logout-button {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 12px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .main-content {
+    margin-left: calc(var(--sidebar-width-collapsed) + 1vw + 16px);
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Tablet portrait (600px–899px) */
+@media screen and (max-width: 899px) {
+  .button i, .login-button i, .logout-button i {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Mobile (< 600px): sidebar diventa top bar sticky */
+@media screen and (max-width: 599px) {
+  .icon {
+    display: inline-block;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: auto;
+    min-height: 60px;
+    margin: 0;
+    padding: 8px 16px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 200;
+  }
+
+  .glass {
+    border-radius: 0;
+  }
+
+  .title {
+    font-size: 22px;
+    margin-bottom: 0;
+  }
+
+  hr {
+    display: none;
+  }
+
+  .button,
+  .login-button,
+  .logout-button {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 10px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .button .text,
+  .login-button .text,
+  .logout-button .text {
+    display: none;
+  }
+
+  .logout-button {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 16px;
+  }
+
+  .button i, .login-button i, .logout-button i {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+}
