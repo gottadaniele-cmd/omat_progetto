@@ -158,7 +158,7 @@ hr {
 }
 
 .login-button .text {
-  color: var(--gray-dark);
+  color: var(--white-cold);
   font-weight: 700;
   font-size: 15px;
   transition: 400ms;
