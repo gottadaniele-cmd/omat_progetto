@@ -63,3 +63,78 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
+
+/* ------------- FORM ------------- */
+.form2 {
+    height: fit-content;
+    padding: 2rem 2.7rem;
+}
+
+.divsForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 0
+}
+
+.labelsForm {
+    padding: 0 0.8rem
+}
+
+.inputText {
+    width: stretch;
+    border: 1px solid var(--gray-light);
+    border-radius: 24px;
+    padding: 1rem 1.5rem;
+    font-size: 12pt;
+}
+
+.inputDescrizione {
+    width: stretch;
+    border: 1px solid var(--gray-light);
+    border-radius: 24px;
+    padding: 1rem 1.5rem;
+    font-size: 12pt;
+    height: 7rem;
+    resize: vertical;
+}
+
+.form2-text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.union {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.union2 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: "˅";
+    font-size: 32pt;
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(32%);
+    pointer-events: none;
+    font-size: 1rem;
+    right: 1.8rem;
+}

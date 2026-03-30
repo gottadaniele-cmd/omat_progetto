@@ -64,7 +64,7 @@ p,
 li,
 span,
 button,
-input, i, label {
+input, i, label, textarea, option, select {
   font-family: 'Jura', sans-serif;
 }
 
@@ -81,6 +81,23 @@ input:-ms-input-placeholder {
   color: var(--gray-steel);
 }
 input::-ms-input-placeholder {
+  font-family: 'Jura', sans-serif;
+  color: var(--gray-steel);
+}
+
+textarea::placeholder {
+  font-family: 'Jura', sans-serif;
+  color: var(--gray-steel);
+}
+textarea::-webkit-input-placeholder {
+  font-family: 'Jura', sans-serif;
+  color: var(--gray-steel);
+}
+textarea:-ms-input-placeholder {
+  font-family: 'Jura', sans-serif;
+  color: var(--gray-steel);
+}
+textarea::-ms-input-placeholder {
   font-family: 'Jura', sans-serif;
   color: var(--gray-steel);
 }
