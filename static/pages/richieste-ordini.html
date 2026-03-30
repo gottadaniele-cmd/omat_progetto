@@ -19,7 +19,7 @@
 
 <body>
   <div class="background-blobs"></div>
-  
+
   <div class="container">
     <!-- Sidebar fissa -->
     <div class="sidebar glass">
@@ -58,11 +58,37 @@
           <h2 class="h2Hero">Richiedi il tuo</h2>
           <h1 class="h1Hero">Ordine</h1>
           <p>Compila il form per richiedere la lavorazione del tuo pezzo.
-          Il nostro team valuterà l'ordine e ti ricontatterà.</p>
+            Il nostro team valuterà l'ordine e ti ricontatterà.</p>
         </div>
       </section>
 
-      <!-- qui puoi aggiungere altre sezioni -->
+      <section class="form2 glass">
+        <div class="form2-text">
+          <div id="nomeDiv" class="divsForm">
+            <label class="labelsForm">Nome:</label>
+            <input class="inputText" type="text" id="Nome" placeholder="Inserisci qui il nome del prodotto..">
+          </div>
+          <div id="nomeDiv" class="divsForm">
+            <label class="labelsForm">Descrizione:</label>
+            <input class="inputText" type="text" id="Descrizione"
+              placeholder="Inserisci qui la descrizione del prodotto..">
+          </div>
+          <div id="nomeDiv" class="divsForm">
+            <label class="labelsForm">Disegno dell'ordine:</label>
+            <div class="divImageForm">
+              <input type="file" hidden accept="image/*">
+              <div class="insideImageForm">
+                <img src="../assets/images/Gallery.png" alt="upload icon" class="iconForm">
+                <p class="pImageForm">
+                  Trascina qui l’immagine oppure
+                  <span id="clickUpload" style="cursor: pointer; text-decoration: underline;">clicca qui</span>
+                  per sfogliare le cartelle.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </body>
