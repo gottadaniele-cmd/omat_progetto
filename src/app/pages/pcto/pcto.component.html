@@ -4,13 +4,13 @@
     <div class="container">
       <!-- Sidebar fissa -->
       <div class="sidebar glass">
-        <h2 class="title">OMAT</h2>
+        <h2 class="title" (click)="goToHome()">OMAT</h2>
         <div id="buttons">
           <button id="btnLogin" class="login-button">
             <p class="text">Login</p>
           </button>
           <hr class="hrSide">
-          <button id="order-button" class="button">
+          <button id="order-button" class="button" (click)="goToOrdini()">
             <i data-lucide="clipboard-list" class="icon"></i>
             <p class="text">Prenota il tuo ordine</p>
             <!-- <span class="badge">5</span> -->

@@ -197,6 +197,7 @@ label {
     font-size: clamp(1.8rem, 16vw, 2.5rem);
     font-weight: 600;
     margin-bottom: 1rem;
+    cursor: pointer;
 }
 
 .sidebar a {
@@ -239,22 +240,12 @@ hr {
 .login-button {
     background-color: rgb(37, 99, 235, 0.5);
     font-family: 'Jura', sans-serif;
-}
-
-.login-button .text {
     color: var(--white-cold);
-    font-weight: 700;
-    font-size: 15px;
-    transition: 400ms;
 }
 
 .login-button:hover {
     background-color: #2563EB;
     font-weight: 700;
-}
-
-.login-button:hover .text {
-    color: var(--white-cold);
 }
 
 .button {
@@ -271,12 +262,6 @@ hr {
     font-weight: 700;
 }
 
-.button:hover,
-.login-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-
 .logout-button {
     margin-top: auto;
     /* già giusto */
@@ -286,11 +271,8 @@ hr {
 
 .logout-button:hover {
     background-color: #db3d3d;
-    font-weight: 700;
-}
-
-.logout-button:hover .text {
     color: var(--white-cold);
+    font-weight: 700;
 }
 
 /*.badge { DA GESTIRE POI QUANDO FACCIO SEPARAZIONE UTENTI

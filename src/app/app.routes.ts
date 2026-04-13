@@ -4,7 +4,10 @@ import { PctoComponent } from './pages/pcto/pcto.component';
 import { RichiesteOrdiniComponent } from './pages/richieste-ordini/richieste-ordini.component';
 
 export const routes: Routes = [
-    { path: '', component: HomeComponent },
+    {
+        path: '', redirectTo: 'home', pathMatch: 'full'
+    },
+    { path: 'home', component: HomeComponent },
     { path: 'pcto', component: PctoComponent },
     { path: 'richieste-ordini', component: RichiesteOrdiniComponent }
 ];

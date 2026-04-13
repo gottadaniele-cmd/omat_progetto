@@ -4,7 +4,7 @@
     <div class="container">
       <!-- Sidebar fissa -->
       <div class="sidebar glass">
-        <h2 class="title">OMAT</h2>
+        <h2 class="title" (click)="goToHome()">OMAT</h2>
         <div id="buttons">
           <button id="btnLogin" class="login-button">
             <p class="text">Login</p>
@@ -15,7 +15,7 @@
             <p class="text">Prenota il tuo ordine</p>
             <!-- <span class="badge">5</span> -->
           </button>
-          <button id="stage-button" class="button">
+          <button id="stage-button" class="button" (click)="goToPCTO()">
             <i data-lucide="graduation-cap" class="icon"></i>
             <p class="text">Richiedi di fare il PCTO da noi</p>
             <!-- <span class="badge">2</span> -->
