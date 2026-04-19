@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { ChiSiamoComponent } from "../chi-siamo/chi-siamo.component";
 
 @Component({
   selector: 'app-pcto',
-  imports: [],
+  imports: [ChiSiamoComponent],
   templateUrl: './pcto.component.html',
   styleUrl: './pcto.component.css',
 })

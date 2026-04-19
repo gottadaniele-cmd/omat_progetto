@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { ChiSiamoComponent } from "../chi-siamo/chi-siamo.component";
 
 @Component({
   selector: 'app-richieste-ordini',
-  imports: [],
+  imports: [ChiSiamoComponent],
   templateUrl: './richieste-ordini.component.html',
   styleUrl: './richieste-ordini.component.css',
 })
