@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ChiSiamoComponent } from "../chi-siamo/chi-siamo.component";
+import { SidebarComponent } from "../sidebar/sidebar.component";
 
 @Component({
   selector: 'app-richieste-ordini',
-  imports: [ChiSiamoComponent],
+  imports: [ChiSiamoComponent, SidebarComponent],
   templateUrl: './richieste-ordini.component.html',
   styleUrl: './richieste-ordini.component.css',
 })

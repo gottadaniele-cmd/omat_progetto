@@ -1,0 +1,35 @@
+<div class="sidebar glass-opaco">
+    <h2 class="title">OMAT</h2>
+
+    <div id="buttons">
+
+        <button id="btnLogin" class="login-button">
+            <p class="text">Login</p>
+        </button>
+
+        <hr class="hrSide">
+
+        <a id="contact-button" class="button" routerLink="/home" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            <i data-lucide="home" class="icon"></i>
+            <p class="text">Home</p>
+        </a>
+
+        <a id="order-button" class="button" routerLink="/richieste-ordini" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            <i data-lucide="clipboard-list" class="icon"></i>
+            <p class="text">Richiedi il tuo ordine</p>
+        </a>
+
+        <a id="stage-button" class="button" routerLink="/pcto" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            <i data-lucide="graduation-cap" class="icon"></i>
+            <p class="text">Prenota il PCTO</p>
+        </a>
+
+    </div>
+
+    <button id="btnLogout" class="logout-button">
+        <p class="text">Logout</p>
+    </button>
+</div>

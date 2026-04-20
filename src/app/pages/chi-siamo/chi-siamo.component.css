@@ -2,10 +2,11 @@
 /* Stile del Footer */
 .omat-footer {
   margin-top: 8rem; 
-  padding: 36px 48px 16px 48px;
+  padding: 1.5rem 2.7rem;
   border-radius: 24px;
   border-bottom: none;
   font-family: 'Jura', sans-serif;
+  text-align: center;
 }
 
 .footer-grid {
@@ -16,33 +17,44 @@
   margin: 0 auto;
 }
 
-.footer-brand .title {
-  font-size: clamp(1.5rem, 16vw, 2rem);;
-  margin-bottom: 5px;
-  color: #1a1a1a;
+.footer-brand h2 {
+  font-size: clamp(1.5rem, 16vw, 2rem);
+  color: var(--black-tech);
+  margin-bottom: 0.4rem;
 }
 
-.footer-brand span {
-  font-size: clamp(0.5rem, 16vw, 2rem);;
-  color: #666;
+.footer-brand p {
+  color: var(--gray-dark);
+  font-size: clamp(0.5rem, 16vw, 0.9rem);
+}
+
+.snc {
+  font-size: clamp(0.5rem, 16vw, 1rem);;
+  color: var(--gray-dark);
   margin-left: 5px;
+  font-family: 'Nebula', sans-serif;
+}
+
+.text-info {
+  color: var(--primary-dark);
 }
 
 .footer-grid h4 {
-  color: #4c84ff; 
-  margin-bottom: 1rem;
+  color: var(--primary); 
+  margin-bottom: 0.3rem;
   text-transform: uppercase;
-  font-size: 0.9rem;
+  font-size: clamp(0.7rem, 16vw, 1rem);
   letter-spacing: 1px;
 }
 
-.footer-info p, .footer-legal p {
-  font-size: clamp(0.5rem, 16vw, 1rem);;;
+.footer-info p {
+  font-size: clamp(0.5rem, 16vw, 0.9rem);
   margin-bottom: 0.8rem;
   display: flex;
-  align-items: center;
+  text-align: center;
+  width: 100%;
   gap: 0.8rem;
-  color: #444;
+  color: var(--gray-dark);
 }
 
 .footer-info i {
@@ -50,10 +62,10 @@
   color: #4c84ff;
 }
 
-.footer-legal a {
+.footer-info a {
   text-decoration: none;
-  color: inherit;
-  transition: color 0.3s;
+  color: var(--gray-dark);
+  width: 100%;
 }
 
 .footer-legal a:hover {
@@ -73,4 +85,14 @@
 .omat-footer [data-lucide] {
   width: 18px;
   height: 18px;
+}
+
+.voci {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.voci p {
+  height: 0.2rem;
 }

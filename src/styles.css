@@ -28,12 +28,13 @@
     --primary-light: #60A5FA;
 
     --black-tech: #0B0F14;
-    --gray-steel: #9CA3AF;
+    --gray-steel: #9ca3af;
     --gray-dark: #374151;
     --gray-light: #E5E7EB;
     --white-cold: #F9FAFB;
 
     --white-cold-rgb: 249, 250, 251;
+    --gray-steel-rgb: 156, 163, 175;
 
     --border-color: rgba(255, 255, 255, 0.1);
     --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.25);
@@ -52,7 +53,6 @@ html {
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    height: 2000px;
 }
 
 h1,
@@ -116,15 +116,17 @@ textarea::-ms-input-placeholder {
 }
 
 label {
-    font-size: 14pt;
+    font-size: clamp(1rem, 16vw, 1.1rem);
 }
 
 .background-blobs {
-    position: absolute;
+    position: fixed;
+    transform: translateZ(0);
+    will-change: transform;
     top: 0;
     left: 0;
     width: 100%;
-    height: 200vh;
+    height: 100%;
     z-index: -1;
 
     background-image:
@@ -134,10 +136,8 @@ label {
     background-repeat: no-repeat;
 
     background-position:
-        100px 220px,
-        /* SINISTRA (esce dallo schermo) */
-        100% 730px;
-    /* DESTRA in basso */
+        100px 120px,
+        100% 530px;
 
     background-size:
         600px,
@@ -157,30 +157,9 @@ label {
 .container {
     display: flex;
     flex-direction: row;
-    min-height: 100vh;
     position: relative;
     z-index: 1;
 }
-
-
-/* ---------- SIDEBAR ---------- */
-
-.sidebar {
-    position: fixed;
-    display: flex;
-    flex-direction: column;
-    left: 2vw;
-    top: 2vh;
-    width: var(--sidebar-width);
-    height: calc(100dvh - 4vh);
-    padding: 1.5rem 1rem;
-
-    text-align: center;
-    color: var(--black-tech);
-    box-sizing: border-box;
-    z-index: 100;
-}
-
 
 .glass {
     background: rgba(var(--white-cold-rgb), 0.1);
@@ -192,106 +171,16 @@ label {
 
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
+.glass-opaco {
+    background: rgba(var(--white-cold-rgb), 0.5);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
 
-.title {
-    font-size: clamp(1.8rem, 16vw, 2.5rem);
-    font-weight: 600;
-    margin-bottom: 1rem;
-    cursor: pointer;
+    border-radius: 24px;
+    border: 1px solid rgba(var(--white-cold-rgb), 0.2);
+
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
-
-.sidebar a {
-    text-decoration: none;
-}
-
-hr {
-    border: none;
-    height: 1px;
-    width: 90%;
-    background-color: var(--gray-light);
-    margin: 0.5rem auto;
-}
-
-.hrSide {
-    margin: 32px auto;
-}
-
-/* Bottoni sidebar condivisi */
-.button,
-.login-button,
-.logout-button {
-    width: 100%;
-    height: 48px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 14px;
-    border: none;
-    cursor: pointer;
-
-    transition: all 0.25s ease;
-    padding: 0 12px;
-
-    font-size: 0.95rem;
-}
-
-.login-button {
-    background-color: rgb(37, 99, 235, 0.5);
-    font-family: 'Jura', sans-serif;
-    color: var(--white-cold);
-}
-
-.login-button:hover {
-    background-color: #2563EB;
-    font-weight: 700;
-}
-
-.button {
-    background-color: #fff;
-    color: var(--text-primary);
-    font-weight: 500;
-    font-family: 'Jura', sans-serif;
-    margin: 12px 0;
-}
-
-.button:hover {
-    background-color: var(--gray-dark);
-    color: var(--white-cold);
-    font-weight: 700;
-}
-
-.logout-button {
-    margin-top: auto;
-    /* già giusto */
-    background-color: #ffe4e4;
-    color: #dc2626;
-}
-
-.logout-button:hover {
-    background-color: #db3d3d;
-    color: var(--white-cold);
-    font-weight: 700;
-}
-
-/*.badge { DA GESTIRE POI QUANDO FACCIO SEPARAZIONE UTENTI
-    position: absolute;
-    background-color: #F97316;
-    color: white;
-    font-size: 12px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 12px;
-  }*/
-
-.icon {
-    display: none;
-    font-size: 32px;
-    width: 32px;
-    height: 32px;
-}
-
 
 /* ---------- MAIN CONTENT ---------- */
 
@@ -300,10 +189,9 @@ hr {
     /* ✅ FIX: margin coerente con sidebar width + margine */
     margin-left: calc(var(--sidebar-width) + 2vw + 16px);
     width: calc(100vw - var(--sidebar-width) - 2vw - 16px - 40px);
-    padding: 0 1rem;
     padding-left: 1.5rem;
     box-sizing: border-box;
-    height: 2000px;
+    padding-bottom: 1.2rem;
 }
 
 

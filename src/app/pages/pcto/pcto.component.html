@@ -4,32 +4,7 @@
     <div class="container">
 
       <!-- SIDEBAR -->
-      <div class="sidebar glass">
-        <h2 class="title" (click)="goToHome()">OMAT</h2>
-        <div id="buttons">
-          <button id="btnLogin" class="login-button">
-            <p class="text">Login</p>
-          </button>
-          <hr class="hrSide">
-          <button id="order-button" class="button" (click)="goToOrdini()">
-            <i data-lucide="clipboard-list" class="icon"></i>
-            <p class="text">Prenota il tuo ordine</p>
-            <!-- <span class="badge">5</span> -->
-          </button>
-          <button id="stage-button" class="button">
-            <i data-lucide="graduation-cap" class="icon"></i>
-            <p class="text">Richiedi di fare il PCTO da noi</p>
-            <!-- <span class="badge">2</span> -->
-          </button>
-          <button id="contact-button" class="button">
-            <i data-lucide="info" class="icon"></i>
-            <p class="text">Chi siamo e contatti</p>
-          </button>
-        </div>
-        <button id="btnLogout" class="logout-button">
-          <p class="text">Logout</p>
-        </button>
-      </div>
+      <app-sidebar></app-sidebar>
   
       <!-- MAIN CONTENT -->
       <div class="main-content">
