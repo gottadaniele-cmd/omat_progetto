@@ -17,13 +17,13 @@
 }
 
 .footer-brand .title {
-  font-size: 1.8rem;
+  font-size: clamp(1.5rem, 16vw, 2rem);;
   margin-bottom: 5px;
   color: #1a1a1a;
 }
 
 .footer-brand span {
-  font-size: 0.8rem;
+  font-size: clamp(0.5rem, 16vw, 2rem);;
   color: #666;
   margin-left: 5px;
 }
@@ -37,7 +37,7 @@
 }
 
 .footer-info p, .footer-legal p {
-  font-size: 0.9rem;
+  font-size: clamp(0.5rem, 16vw, 1rem);;;
   margin-bottom: 0.8rem;
   display: flex;
   align-items: center;
@@ -65,7 +65,7 @@
   margin-top: 40px;
   padding-top: 20px;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-  font-size: 0.8rem;
+  font-size: clamp(0.5rem, 16vw, 0.8rem);
   color: #888;
 }
 
