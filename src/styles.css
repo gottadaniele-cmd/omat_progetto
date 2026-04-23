@@ -340,7 +340,7 @@ label {
     }
 
     .title {
-        font-size: 24px;
+        font-size: clamp(0.5rem, 16vw, 2.5rem);
         margin-bottom: 12px;
     }
 
@@ -378,6 +378,11 @@ label {
         width: 18px;
         height: 18px;
     }
+
+    .title {
+        text-align: center;
+        font-size: 1.2rem;
+    }
 }
 
 /* Mobile (< 600px): sidebar diventa top bar sticky */
@@ -412,7 +417,7 @@ label {
     }
 
     .title {
-        font-size: 22px;
+        font-size: 0.6rem;
         margin-bottom: 0;
     }
 
