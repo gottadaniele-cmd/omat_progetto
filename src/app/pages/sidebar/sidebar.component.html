@@ -3,8 +3,9 @@
 
     <div id="buttons">
 
-        <button id="btnLogin" class="login-button">
-            <p class="text">Login</p>
+        <button id="btnLogin" class="login-button" routerLink="/login" routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            <p class="text" >Login</p>
         </button>
 
         <hr class="hrSide">

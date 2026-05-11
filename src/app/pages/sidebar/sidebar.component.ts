@@ -18,20 +18,6 @@ declare const lucide: any
 export class SidebarComponent implements AfterViewInit {
   private router = inject(Router);
 
-  private iconsRendered = false;
-
-  goToHome() {
-    this.router.navigate(['/home']);
-  }
-
-  goToOrdini() {
-    this.router.navigate(['/richieste-ordini']);
-  }
-
-  goToPCTO() {
-    this.router.navigate(['/pcto']);
-  }
-
   ngAfterViewInit(): void {
     lucide.createIcons();
   }
