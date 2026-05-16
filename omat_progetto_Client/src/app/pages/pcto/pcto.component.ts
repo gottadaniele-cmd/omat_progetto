@@ -1,10 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { startWith } from 'rxjs';
 import { ChiSiamoComponent } from '../chi-siamo/chi-siamo.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { OmatApiService } from '../../core/api/omat-api.service';
 
 @Component({
   selector: 'app-pcto',
@@ -15,9 +16,11 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 })
 export class PctoComponent {
   private readonly formBuilder = new FormBuilder();
+  private readonly api = inject(OmatApiService);
 
   protected readonly submitted = signal(false);
   protected readonly requestSent = signal(false);
+  protected readonly submitError = signal('');
   protected readonly savedEmail = 'nome.cognome@example.com';
 
   protected readonly pctoForm = this.formBuilder.nonNullable.group({
@@ -59,6 +62,7 @@ export class PctoComponent {
   protected submitPctoRequest(): void {
     this.submitted.set(true);
     this.requestSent.set(false);
+    this.submitError.set('');
 
     if (this.pctoForm.invalid || !this.hasValidDateRange()) {
       this.pctoForm.markAllAsTouched();
@@ -68,12 +72,15 @@ export class PctoComponent {
     const payload = {
       ...this.pctoForm.getRawValue(),
       email: this.savedEmail,
-      status: 'sent',
-      createdAt: new Date().toISOString(),
     };
 
-    console.log('PCTO request ready for API', payload);
-    this.requestSent.set(true);
+    this.api.createPctoRequest(payload).subscribe({
+      next: () => this.requestSent.set(true),
+      error: (error) => {
+        console.error(error);
+        this.submitError.set('Impossibile inviare la richiesta PCTO. Riprova tra poco.');
+      },
+    });
   }
 
   protected hasValidDateRange(): boolean {

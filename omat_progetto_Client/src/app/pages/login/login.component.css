@@ -185,3 +185,13 @@
     padding: 0 0.8rem;
 }
 
+.error-note {
+    margin: 0 0 10px;
+    border: 1px solid #fecdd3;
+    border-radius: 12px;
+    background: #fff1f2;
+    color: #be123c;
+    padding: 10px 12px;
+    font-weight: 800;
+    line-height: 1.4;
+}

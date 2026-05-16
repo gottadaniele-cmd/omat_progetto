@@ -1,10 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { startWith } from 'rxjs';
 import { ChiSiamoComponent } from '../chi-siamo/chi-siamo.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ORDER_PRIORITY_LABELS } from '../../core/models/order.model';
+import { OmatApiService } from '../../core/api/omat-api.service';
 import { FileUploadComponent } from '../../shared/components/file-upload/file-upload.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
@@ -23,10 +24,12 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
 })
 export class RichiesteOrdiniComponent {
   private readonly formBuilder = new FormBuilder();
+  private readonly api = inject(OmatApiService);
 
   protected readonly uploadedFiles = signal<File[]>([]);
   protected readonly submitted = signal(false);
   protected readonly requestSent = signal(false);
+  protected readonly submitError = signal('');
   protected readonly priorityLabels = ORDER_PRIORITY_LABELS;
 
   protected readonly orderForm = this.formBuilder.nonNullable.group({
@@ -64,24 +67,36 @@ export class RichiesteOrdiniComponent {
   protected submitOrder(): void {
     this.submitted.set(true);
     this.requestSent.set(false);
+    this.submitError.set('');
 
     if (this.orderForm.invalid || !this.uploadedFiles().length) {
       this.orderForm.markAllAsTouched();
       return;
     }
 
+    const value = this.orderForm.getRawValue();
     const payload = {
-      ...this.orderForm.getRawValue(),
+      title: value.title,
+      material: value.material,
+      description: value.description,
+      priority: value.priority,
+      quantity: value.quantity,
+      notes: value.notes,
       attachments: this.uploadedFiles().map((file) => ({
         fileName: file.name,
         contentType: file.type,
         size: file.size,
       })),
-      status: 'sent',
-      createdAt: new Date().toISOString(),
     };
 
-    console.log('Order request ready for API', payload);
-    this.requestSent.set(true);
+    this.api.createOrder(payload).subscribe({
+      next: () => this.requestSent.set(true),
+      error: (error) => {
+        console.error(error);
+        this.submitError.set(
+          'Impossibile inviare la richiesta. Verifica di aver effettuato il login azienda.',
+        );
+      },
+    });
   }
 }

@@ -157,6 +157,9 @@
         @if (requestSent()) {
           <p class="success-note">Richiesta PCTO pronta per l'invio API. I dati sono stati validati.</p>
         }
+        @if (submitError()) {
+          <p class="error-note">{{ submitError() }}</p>
+        }
         <p class="summary-note">
           Lo stato iniziale sara <strong>Inviato</strong>. OMAT potra approvare, rifiutare o
           richiedere ulteriori informazioni.

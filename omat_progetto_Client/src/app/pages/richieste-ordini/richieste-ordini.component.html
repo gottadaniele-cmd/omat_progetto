@@ -130,6 +130,9 @@
         @if (requestSent()) {
           <p class="success-note">Richiesta pronta per l'invio API. I dati sono stati validati.</p>
         }
+        @if (submitError()) {
+          <p class="error-note">{{ submitError() }}</p>
+        }
         <p class="summary-note">
           Dopo l'invio lo stato iniziale sara <strong>Inviato</strong>. Un admin OMAT potra poi
           portarlo in valutazione, approvarlo o rifiutarlo.
