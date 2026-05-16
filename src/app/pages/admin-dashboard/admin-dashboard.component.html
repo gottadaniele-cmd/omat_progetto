@@ -1,0 +1,157 @@
+<div class="background-blobs"></div>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content admin-page">
+    <section class="admin-heading">
+      <div>
+        <span class="eyebrow">OMAT back office</span>
+        <h1>Dashboard amministrativa</h1>
+        <p>Controllo rapido su richieste, priorita e avanzamento delle lavorazioni.</p>
+      </div>
+    </section>
+
+    <section class="metrics-grid" aria-label="Panoramica ordini">
+      <article>
+        <span>Ordini attivi</span>
+        <strong>{{ activeOrders() }}</strong>
+        <p>In valutazione, approvati o in produzione</p>
+      </article>
+      <article>
+        <span>Completati</span>
+        <strong>{{ completedOrders() }}</strong>
+        <p>Lavorazioni chiuse nello storico</p>
+      </article>
+      <article>
+        <span>Priorita alta</span>
+        <strong>{{ urgentOrders() }}</strong>
+        <p>Richieste urgenti o critiche</p>
+      </article>
+      <article>
+        <span>PCTO da valutare</span>
+        <strong>{{ pendingPctoRequests() }}</strong>
+        <p>Nuove richieste o in revisione</p>
+      </article>
+      <article>
+        <span>PCTO approvati</span>
+        <strong>{{ approvedPctoRequests() }}</strong>
+        <p>Studenti confermati per il periodo</p>
+      </article>
+    </section>
+
+    <section class="table-panel">
+      <div class="table-toolbar">
+        <div>
+          <h2>Richieste di lavorazione</h2>
+          <p>{{ filteredOrders().length }} risultati visibili</p>
+        </div>
+
+        <div class="filters">
+          <input
+            type="search"
+            placeholder="Cerca codice, lavoro, admin"
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+          />
+          <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+            <option value="all">Tutti gli stati</option>
+            <option value="sent">Inviato</option>
+            <option value="under-review">In valutazione</option>
+            <option value="approved">Approvato</option>
+            <option value="in-production">In produzione</option>
+            <option value="completed">Completato</option>
+            <option value="rejected">Rifiutato</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="orders-table" role="table" aria-label="Tabella ordini OMAT">
+        <div class="table-row table-head" role="row">
+          <span role="columnheader">Codice</span>
+          <span role="columnheader">Lavorazione</span>
+          <span role="columnheader">Admin</span>
+          <span role="columnheader">Priorita</span>
+          <span role="columnheader">Stato</span>
+          <span role="columnheader">Azione</span>
+        </div>
+
+        @for (order of filteredOrders(); track order.id) {
+          <div class="table-row" role="row">
+            <strong role="cell">{{ order.code }}</strong>
+            <span role="cell">{{ order.title }}</span>
+            <span role="cell">{{ order.assignedAdmin }}</span>
+            <span role="cell">{{ priorityLabels[order.priority] }}</span>
+            <span role="cell"><app-status-badge [status]="order.status"></app-status-badge></span>
+            <span role="cell">
+              <a class="detail-link" [routerLink]="['/admin/lavori', order.id]">Dettagli</a>
+            </span>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <strong>Nessun ordine trovato</strong>
+            <p>Modifica filtri o ricerca per visualizzare altre richieste.</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="table-panel">
+      <div class="table-toolbar">
+        <div>
+          <h2>Prenotazioni PCTO</h2>
+          <p>{{ filteredPctoRequests().length }} richieste visibili</p>
+        </div>
+
+        <div class="filters">
+          <input
+            type="search"
+            placeholder="Cerca studente, scuola, indirizzo"
+            [ngModel]="pctoSearchTerm()"
+            (ngModelChange)="pctoSearchTerm.set($event)"
+          />
+          <select [ngModel]="pctoStatusFilter()" (ngModelChange)="pctoStatusFilter.set($event)">
+            <option value="all">Tutti gli stati</option>
+            <option value="sent">Inviato</option>
+            <option value="under-review">In valutazione</option>
+            <option value="approved">Approvato</option>
+            <option value="rejected">Rifiutato</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pcto-table" role="table" aria-label="Tabella prenotazioni PCTO">
+        <div class="table-row table-head pcto-row" role="row">
+          <span role="columnheader">Studente</span>
+          <span role="columnheader">Scuola</span>
+          <span role="columnheader">Classe</span>
+          <span role="columnheader">Indirizzo</span>
+          <span role="columnheader">Periodo</span>
+          <span role="columnheader">Stato</span>
+          <span role="columnheader">Azione</span>
+        </div>
+
+        @for (request of filteredPctoRequests(); track request.id) {
+          <div class="table-row pcto-row" role="row">
+            <strong role="cell">{{ request.studentName }} {{ request.studentSurname }}</strong>
+            <span role="cell">{{ request.school }}</span>
+            <span role="cell">{{ request.classYear }}ª</span>
+            <span role="cell">{{ request.studyProgram }}</span>
+            <span role="cell">{{ formatDate(request.startDate) }} - {{ formatDate(request.endDate) }}</span>
+            <span role="cell"><app-status-badge [status]="request.status"></app-status-badge></span>
+            <span role="cell">
+              <a class="detail-link" [routerLink]="['/admin/pcto', request.id]">Dettagli</a>
+            </span>
+          </div>
+        } @empty {
+          <div class="empty-state">
+            <strong>Nessuna richiesta PCTO trovata</strong>
+            <p>Modifica filtri o ricerca per visualizzare altre prenotazioni.</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <app-chi-siamo></app-chi-siamo>
+  </main>
+</div>

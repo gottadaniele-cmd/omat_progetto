@@ -1,0 +1,11 @@
+<span
+  class="status-badge"
+  [class.status-sent]="status() === 'sent'"
+  [class.status-under-review]="status() === 'under-review'"
+  [class.status-approved]="status() === 'approved'"
+  [class.status-in-production]="status() === 'in-production'"
+  [class.status-completed]="status() === 'completed'"
+  [class.status-rejected]="status() === 'rejected'"
+>
+  {{ label() }}
+</span>

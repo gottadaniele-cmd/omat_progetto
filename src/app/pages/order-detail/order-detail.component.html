@@ -1,0 +1,124 @@
+<div class="background-blobs"></div>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content detail-page">
+    @if (order(); as order) {
+      <a class="back-link" routerLink="/admin">Torna alla dashboard</a>
+
+      <section class="detail-heading">
+        <div>
+          <span class="eyebrow">{{ order.code }}</span>
+          <h1>{{ order.title }}</h1>
+          <p>{{ order.description }}</p>
+        </div>
+        <app-status-badge [status]="order.status"></app-status-badge>
+      </section>
+
+      <section class="detail-layout">
+        <div class="primary-column">
+          <section class="detail-panel drawing-panel">
+            <div class="panel-heading">
+              <span>01</span>
+              <div>
+                <h2>Disegno e allegati</h2>
+                <p>Materiale tecnico inviato dal cliente per valutazione e produzione.</p>
+              </div>
+            </div>
+
+            <div class="drawing-preview">
+              <span>PDF</span>
+              <strong>Anteprima disegno tecnico</strong>
+              <p>Qui verra visualizzato il PDF o l'immagine tecnica caricata dal cliente.</p>
+            </div>
+
+            <div class="attachment-list">
+              @for (attachment of order.attachments; track attachment.id) {
+                <article>
+                  <div>
+                    <strong>{{ attachment.fileName }}</strong>
+                    <p>{{ attachment.contentType }} · {{ formatSize(attachment.size) }}</p>
+                  </div>
+                  <span>{{ formatDate(attachment.uploadedAt) }}</span>
+                </article>
+              } @empty {
+                <div class="empty-box">Nessun allegato tecnico registrato.</div>
+              }
+            </div>
+          </section>
+
+          <section class="detail-panel">
+            <div class="panel-heading">
+              <span>02</span>
+              <div>
+                <h2>Dettagli lavorazione</h2>
+                <p>Informazioni operative necessarie alla valutazione tecnica.</p>
+              </div>
+            </div>
+
+            <div class="info-grid">
+              <div>
+                <span>Cliente</span>
+                <strong>{{ order.customer }}</strong>
+              </div>
+              <div>
+                <span>Materiale</span>
+                <strong>{{ order.material }}</strong>
+              </div>
+              <div>
+                <span>Quantita</span>
+                <strong>{{ order.quantity }}</strong>
+              </div>
+              <div>
+                <span>Priorita</span>
+                <strong>{{ priorityLabels[order.priority] }}</strong>
+              </div>
+            </div>
+
+            <div class="text-block">
+              <span>Note aggiuntive</span>
+              <p>{{ order.notes || 'Nessuna nota aggiuntiva inserita.' }}</p>
+            </div>
+          </section>
+        </div>
+
+        <aside class="side-panel">
+          <span class="eyebrow">Gestione interna</span>
+          <h2>Responsabile</h2>
+          <dl>
+            <div>
+              <dt>Admin</dt>
+              <dd>{{ order.assignedAdmin }}</dd>
+            </div>
+            <div>
+              <dt>Creazione</dt>
+              <dd>{{ formatDate(order.createdAt) }}</dd>
+            </div>
+            <div>
+              <dt>Ultimo aggiornamento</dt>
+              <dd>{{ formatDate(order.updatedAt) }}</dd>
+            </div>
+            <div>
+              <dt>Allegati</dt>
+              <dd>{{ order.attachments.length }}</dd>
+            </div>
+          </dl>
+
+          <div class="action-stack">
+            <button type="button">Aggiorna stato</button>
+            <button type="button" class="secondary">Contatta cliente</button>
+          </div>
+        </aside>
+      </section>
+    } @else {
+      <section class="missing-panel">
+        <h1>Lavoro non trovato</h1>
+        <p>La richiesta selezionata non esiste nei dati disponibili.</p>
+        <a routerLink="/admin">Torna alla dashboard</a>
+      </section>
+    }
+
+    <app-chi-siamo></app-chi-siamo>
+  </main>
+</div>

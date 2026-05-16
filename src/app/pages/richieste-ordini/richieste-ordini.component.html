@@ -1,56 +1,142 @@
-<body>
-    <div class="background-blobs"></div>
-  
-    <div class="container">
+<div class="background-blobs"></div>
 
-      <!-- SIDEBAR -->
-      <app-sidebar></app-sidebar>
-  
-      <!-- MAIN CONTENT -->
-      <div class="main-content">
+<div class="container">
+  <app-sidebar></app-sidebar>
 
-        <!-- HEADER -->
-        <section class="hero">
-          <div class="hero-text">
-            <h3 class="h3Hero">OMAT<span class="sncHero">s.n.c</span></h3>
-            <hr class="hrHero">
-            <h2 class="h2Hero">Richiedi il tuo</h2>
-            <h1 class="h1Hero">Ordine</h1>
-            <p>Compila il form per richiedere la lavorazione del tuo pezzo.
-              Il nostro team valuterà l'ordine e ti ricontatterà.</p>
-          </div>
-        </section>
-  
-        <!-- SECTIONS -->
-        <section class="form2 glass">
-          <div class="form2-text">
-            <div id="nomeDiv" class="divsForm">
-              <label class="labelsForm">Nome:</label>
-              <input class="inputText" type="text" id="Nome" placeholder="Inserisci qui il nome del prodotto..">
-            </div>
-            <div id="descrizioneDiv" class="divsForm">
-              <label class="labelsForm">Descrizione:</label>
-              <textarea class="inputDescrizione" type="text" id="Descrizione" placeholder="Inserisci qui la descrizione del prodotto.."></textarea>
-            </div>
-            <div id="imageDiv" class="divsForm">
-              <label class="labelsForm">Disegno dell'ordine:</label>
-              <div class="divImageForm">
-                <input type="file" hidden accept="image/*">
-                <div class="insideImageForm">
-                  <img src="assets/images/Gallery.png" alt="upload icon" class="iconForm">
-                  <p class="pImageForm">
-                    Trascina qui l’immagine oppure
-                    <span id="clickUpload" style="cursor: pointer; text-decoration: underline;">clicca qui</span>
-                    per sfogliare le cartelle.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- FOOTER -->
-        <app-chi-siamo></app-chi-siamo>
+  <main class="main-content order-page">
+    <section class="page-heading">
+      <div>
+        <span class="eyebrow">Area aziende</span>
+        <h1>Nuova richiesta di lavorazione</h1>
+        <p>
+          Invia disegni tecnici, dettagli del pezzo e priorita. OMAT potra valutare la richiesta
+          con informazioni complete fin dal primo contatto.
+        </p>
       </div>
-    </div>
-  </body>
+      <app-status-badge status="sent"></app-status-badge>
+    </section>
+
+    <form class="order-layout" [formGroup]="orderForm" (ngSubmit)="submitOrder()">
+      <section class="order-panel">
+        <div class="section-title">
+          <span>01</span>
+          <div>
+            <h2>Disegno tecnico</h2>
+            <p>Carica PDF, immagini del disegno o tavole tecniche necessarie alla valutazione.</p>
+          </div>
+        </div>
+
+        <app-file-upload (filesChanged)="onFilesChanged($event)"></app-file-upload>
+        @if (submitted() && !uploadedFiles().length) {
+          <p class="field-error">Carica almeno un allegato tecnico prima di inviare la richiesta.</p>
+        }
+      </section>
+
+      <section class="order-panel">
+        <div class="section-title">
+          <span>02</span>
+          <div>
+            <h2>Dettagli lavorazione</h2>
+            <p>Usa descrizioni pratiche: materiale, quantita e lavorazioni attese.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            <span>Nome lavorazione</span>
+            <input formControlName="title" type="text" placeholder="Es. Supporto staffa in alluminio" />
+          </label>
+
+          <label>
+            <span>Cliente / azienda</span>
+            <input formControlName="customer" type="text" placeholder="Es. Meccanica Rossi S.r.l." />
+          </label>
+
+          <label>
+            <span>Materiale</span>
+            <select formControlName="material">
+              <option value="">Seleziona materiale</option>
+              <option value="Acciaio C45">Acciaio C45</option>
+              <option value="Acciaio inox">Acciaio inox</option>
+              <option value="Alluminio">Alluminio</option>
+              <option value="Ottone">Ottone</option>
+              <option value="Plastica tecnica">Plastica tecnica</option>
+              <option value="Da definire">Da definire</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Quantita</span>
+            <input formControlName="quantity" type="number" min="1" />
+          </label>
+
+          <label>
+            <span>Priorita</span>
+            <select formControlName="priority">
+              <option value="standard">Standard</option>
+              <option value="urgent">Urgente</option>
+              <option value="critical">Critica</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="full-field">
+          <span>Descrizione ordine</span>
+          <textarea
+            formControlName="description"
+            placeholder="Descrivi lavorazione richiesta, tolleranze importanti, finitura desiderata e uso previsto del pezzo."
+          ></textarea>
+        </label>
+
+        <label class="full-field">
+          <span>Note aggiuntive</span>
+          <textarea
+            formControlName="notes"
+            placeholder="Tempi indicativi, riferimenti interni, preferenze di contatto o altre informazioni utili."
+          ></textarea>
+        </label>
+      </section>
+
+      <aside class="order-summary">
+        <div>
+          <span class="eyebrow">Riepilogo</span>
+          <h2>Richiesta in bozza</h2>
+        </div>
+
+        <dl>
+          <div>
+            <dt>Cliente</dt>
+            <dd>{{ summary().customer }}</dd>
+          </div>
+          <div>
+            <dt>Materiale</dt>
+            <dd>{{ summary().material }}</dd>
+          </div>
+          <div>
+            <dt>Quantita</dt>
+            <dd>{{ summary().quantity }}</dd>
+          </div>
+          <div>
+            <dt>Priorita</dt>
+            <dd>{{ summary().priority }}</dd>
+          </div>
+          <div>
+            <dt>Allegati</dt>
+            <dd>{{ summary().files }}</dd>
+          </div>
+        </dl>
+
+        <button class="submit-button" type="submit">Invia richiesta</button>
+        @if (requestSent()) {
+          <p class="success-note">Richiesta pronta per l'invio API. I dati sono stati validati.</p>
+        }
+        <p class="summary-note">
+          Dopo l'invio lo stato iniziale sara <strong>Inviato</strong>. Un admin OMAT potra poi
+          portarlo in valutazione, approvarlo o rifiutarlo.
+        </p>
+      </aside>
+    </form>
+
+    <app-chi-siamo></app-chi-siamo>
+  </main>
+</div>

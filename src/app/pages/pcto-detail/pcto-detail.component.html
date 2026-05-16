@@ -1,0 +1,120 @@
+<div class="background-blobs"></div>
+
+<div class="container">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content detail-page">
+    @if (request(); as request) {
+      <a class="back-link" routerLink="/admin">Torna alla dashboard</a>
+
+      <section class="detail-heading">
+        <div>
+          <span class="eyebrow">Richiesta PCTO</span>
+          <h1>{{ request.studentName }} {{ request.studentSurname }}</h1>
+          <p>{{ request.motivation }}</p>
+        </div>
+        <app-status-badge [status]="request.status"></app-status-badge>
+      </section>
+
+      <section class="detail-layout">
+        <div class="primary-column">
+          <section class="detail-panel">
+            <div class="panel-heading">
+              <span>01</span>
+              <div>
+                <h2>Dati studente</h2>
+                <p>Informazioni anagrafiche e contatto usati per la gestione della candidatura.</p>
+              </div>
+            </div>
+
+            <div class="info-grid">
+              <div>
+                <span>Email</span>
+                <strong>{{ request.email }}</strong>
+              </div>
+              <div>
+                <span>Citta</span>
+                <strong>{{ request.city }}</strong>
+              </div>
+              <div>
+                <span>CAP</span>
+                <strong>{{ request.postalCode }}</strong>
+              </div>
+              <div>
+                <span>Richiesta inviata</span>
+                <strong>{{ formatDate(request.createdAt) }}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="detail-panel">
+            <div class="panel-heading">
+              <span>02</span>
+              <div>
+                <h2>Scuola e periodo</h2>
+                <p>Dati utili per valutare disponibilita, mansioni osservabili e coerenza formativa.</p>
+              </div>
+            </div>
+
+            <div class="info-grid">
+              <div>
+                <span>Scuola</span>
+                <strong>{{ request.school }}</strong>
+              </div>
+              <div>
+                <span>Classe</span>
+                <strong>{{ request.classYear }}ª</strong>
+              </div>
+              <div>
+                <span>Indirizzo</span>
+                <strong>{{ request.studyProgram }}</strong>
+              </div>
+              <div>
+                <span>Periodo richiesto</span>
+                <strong>{{ formatDate(request.startDate) }} - {{ formatDate(request.endDate) }}</strong>
+              </div>
+            </div>
+
+            <div class="text-block">
+              <span>Motivazione</span>
+              <p>{{ request.motivation }}</p>
+            </div>
+          </section>
+        </div>
+
+        <aside class="side-panel">
+          <span class="eyebrow">Valutazione OMAT</span>
+          <h2>Decisione admin</h2>
+          <dl>
+            <div>
+              <dt>Stato</dt>
+              <dd><app-status-badge [status]="request.status"></app-status-badge></dd>
+            </div>
+            <div>
+              <dt>Studente</dt>
+              <dd>{{ request.studentName }} {{ request.studentSurname }}</dd>
+            </div>
+            <div>
+              <dt>Durata</dt>
+              <dd>{{ formatDate(request.startDate) }} - {{ formatDate(request.endDate) }}</dd>
+            </div>
+          </dl>
+
+          <div class="action-stack">
+            <button type="button">Approva richiesta</button>
+            <button type="button" class="secondary">Richiedi informazioni</button>
+            <button type="button" class="danger">Rifiuta</button>
+          </div>
+        </aside>
+      </section>
+    } @else {
+      <section class="missing-panel">
+        <h1>Richiesta PCTO non trovata</h1>
+        <p>La prenotazione selezionata non esiste nei dati disponibili.</p>
+        <a routerLink="/admin">Torna alla dashboard</a>
+      </section>
+    }
+
+    <app-chi-siamo></app-chi-siamo>
+  </main>
+</div>

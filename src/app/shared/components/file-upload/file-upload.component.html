@@ -1,0 +1,34 @@
+<label
+  class="upload-zone"
+  [class.is-dragging]="isDragging()"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave()"
+  (drop)="onDrop($event)"
+>
+  <input
+    class="upload-input"
+    type="file"
+    multiple
+    accept="application/pdf,image/png,image/jpeg,image/webp"
+    (change)="onFileInput($event)"
+  />
+
+  <span class="upload-icon" aria-hidden="true">+</span>
+  <span class="upload-title">Carica disegni tecnici</span>
+  <span class="upload-copy">Trascina PDF o immagini, oppure seleziona i file dal computer.</span>
+  <span class="upload-meta">PDF, PNG, JPG, WEBP</span>
+</label>
+
+@if (files().length) {
+  <div class="file-list" aria-label="File caricati">
+    @for (file of files(); track file.name + file.size; let index = $index) {
+      <div class="file-row">
+        <div>
+          <p>{{ file.name }}</p>
+          <span>{{ formatSize(file.size) }}</span>
+        </div>
+        <button type="button" (click)="removeFile(index)" aria-label="Rimuovi file">Rimuovi</button>
+      </div>
+    }
+  </div>
+}
