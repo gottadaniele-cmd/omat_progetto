@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { OmatApiService } from '../../core/api/omat-api.service';
+import { AuthStateService } from '../../core/auth/auth-state.service';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ export class LoginComponent {
   private readonly router = inject(Router);
   private readonly formBuilder = new FormBuilder();
   private readonly api = inject(OmatApiService);
+  private readonly auth = inject(AuthStateService);
 
   protected readonly loginError = signal('');
 
@@ -33,7 +35,19 @@ export class LoginComponent {
 
     this.api.login(email, password).subscribe({
       next: ({ user }) => {
-        this.router.navigate([user.role === 'admin' ? '/admin' : '/richieste-ordini']);
+        this.auth.setUser(user);
+
+        if (user.role === 'admin') {
+          this.router.navigate(['/admin']);
+          return;
+        }
+
+        if (user.role === 'studente') {
+          this.router.navigate(['/pcto']);
+          return;
+        }
+
+        this.router.navigate(['/richieste-ordini']);
       },
       error: (error) => {
         console.error(error);

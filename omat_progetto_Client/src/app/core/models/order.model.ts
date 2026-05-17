@@ -21,6 +21,7 @@ export interface OrderRequest {
   code: string;
   title: string;
   customer: string;
+  customerEmail?: string;
   material: string;
   quantity: number;
   priority: OrderPriority;

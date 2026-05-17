@@ -101,10 +101,22 @@
           </dl>
 
           <div class="action-stack">
-            <button type="button">Approva richiesta</button>
-            <button type="button" class="secondary">Richiedi informazioni</button>
-            <button type="button" class="danger">Rifiuta</button>
+            <button type="button" [disabled]="isUpdating()" (click)="updateStatus('approved')">
+              Approva richiesta
+            </button>
+            <button type="button" class="secondary" [disabled]="isUpdating()" (click)="updateStatus('under-review')">
+              Richiedi informazioni
+            </button>
+            <button type="button" class="danger" [disabled]="isUpdating()" (click)="updateStatus('rejected')">
+              Rifiuta
+            </button>
           </div>
+          @if (statusMessage()) {
+            <p class="success-note">{{ statusMessage() }}</p>
+          }
+          @if (actionError()) {
+            <p class="error-note">{{ actionError() }}</p>
+          }
         </aside>
       </section>
     } @else {

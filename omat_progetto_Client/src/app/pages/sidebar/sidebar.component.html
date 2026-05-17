@@ -3,10 +3,17 @@
 
     <div id="buttons">
 
-        <button id="btnLogin" class="login-button" routerLink="/login" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }">
-            <p class="text" >Login</p>
-        </button>
+        @if (user(); as currentUser) {
+            <div class="user-card">
+                <strong>{{ currentUser.name }}</strong>
+                <span>{{ roleLabel() }}</span>
+            </div>
+        } @else {
+            <button id="btnLogin" class="login-button" routerLink="/login" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }">
+                <p class="text" >Login</p>
+            </button>
+        }
 
         <hr class="hrSide">
 
@@ -16,27 +23,35 @@
             <p class="text">Home</p>
         </a>
 
-        <a id="order-button" class="button" routerLink="/richieste-ordini" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }">
-            <i data-lucide="clipboard-list" class="icon"></i>
-            <p class="text">Richiedi il tuo ordine</p>
-        </a>
+        @if (canSeeOrders()) {
+            <a id="order-button" class="button" routerLink="/richieste-ordini" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }">
+                <i data-lucide="clipboard-list" class="icon"></i>
+                <p class="text">Richiedi il tuo ordine</p>
+            </a>
+        }
 
-        <a id="stage-button" class="button" routerLink="/pcto" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }">
-            <i data-lucide="graduation-cap" class="icon"></i>
-            <p class="text">Prenota il PCTO</p>
-        </a>
+        @if (canSeePcto()) {
+            <a id="stage-button" class="button" routerLink="/pcto" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }">
+                <i data-lucide="graduation-cap" class="icon"></i>
+                <p class="text">Prenota il PCTO</p>
+            </a>
+        }
 
-        <a id="admin-button" class="button" routerLink="/admin" routerLinkActive="active"
-            [routerLinkActiveOptions]="{ exact: true }">
-            <i data-lucide="layout-dashboard" class="icon"></i>
-            <p class="text">Dashboard admin</p>
-        </a>
+        @if (canSeeAdmin()) {
+            <a id="admin-button" class="button" routerLink="/admin" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }">
+                <i data-lucide="layout-dashboard" class="icon"></i>
+                <p class="text">Dashboard admin</p>
+            </a>
+        }
 
     </div>
 
-    <button id="btnLogout" class="logout-button">
-        <p class="text">Logout</p>
-    </button>
+    @if (user()) {
+        <button id="btnLogout" class="logout-button" type="button" (click)="logout()">
+            <p class="text">Logout</p>
+        </button>
+    }
 </div>

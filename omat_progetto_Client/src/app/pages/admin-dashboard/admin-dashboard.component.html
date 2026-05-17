@@ -12,6 +12,13 @@
       </div>
     </section>
 
+    @if (loadError()) {
+      <section class="empty-state">
+        <strong>Connessione dati non disponibile</strong>
+        <p>{{ loadError() }}</p>
+      </section>
+    }
+
     <section class="metrics-grid" aria-label="Panoramica ordini">
       <article>
         <span>Ordini attivi</span>

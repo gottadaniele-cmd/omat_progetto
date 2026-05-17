@@ -1,6 +1,7 @@
 import http from 'http';
 import https from 'https';
 import fs from 'fs';
+import crypto from 'crypto';
 import express, { CookieOptions, NextFunction, Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -8,10 +9,14 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { Pool } from 'pg';
+import { getSupabaseClient } from './src/supabaseClient';
 
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env', override: true });
 
-type UserRole = 'azienda' | 'admin';
+type UserRole = 'azienda' | 'admin' | 'studente';
+type OrderStatus = 'sent' | 'under-review' | 'approved' | 'in-production' | 'completed' | 'rejected';
+type OrderPriority = 'standard' | 'urgent' | 'critical';
+type PctoStatus = 'sent' | 'under-review' | 'approved' | 'rejected';
 
 type TokenPayload = {
   id: number;
@@ -52,6 +57,17 @@ const cookieOptions: CookieOptions = {
   sameSite: isProduction ? 'none' : 'lax',
 };
 
+const ORDER_STATUSES: OrderStatus[] = [
+  'sent',
+  'under-review',
+  'approved',
+  'in-production',
+  'completed',
+  'rejected',
+];
+const PCTO_STATUSES: PctoStatus[] = ['sent', 'under-review', 'approved', 'rejected'];
+const ORDER_PRIORITIES: OrderPriority[] = ['standard', 'urgent', 'critical'];
+
 app.use((req, _res, next) => {
   console.log(`${req.method}: ${req.originalUrl}`);
   next();
@@ -68,8 +84,30 @@ app.use(
   }),
 );
 
+app.get('/', (_req, res) => {
+  res.send({
+    name: 'OMAT API',
+    ok: true,
+    clientUrl: 'http://127.0.0.1:4200',
+    healthUrl: '/api/health',
+  });
+});
+
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (_req, res) => {
+  res.status(204).send();
+});
+
 function createToken(payload: TokenPayload): string {
   return jwt.sign(payload, jwtKey, { expiresIn: TOKEN_DURATION_SECONDS });
+}
+
+function toTokenPayload(payload: any): TokenPayload {
+  return {
+    id: Number(payload.id),
+    email: String(payload.email),
+    role: payload.role,
+    name: String(payload.name),
+  };
 }
 
 function normalizeOrder(row: any) {
@@ -78,9 +116,10 @@ function normalizeOrder(row: any) {
     code: `OM-${String(row.id).padStart(4, '0')}`,
     title: row.nomeProdotto,
     customer: row.nomeAzienda ?? 'Azienda non disponibile',
+    customerEmail: row.emailAzienda ?? '',
     material: row.materiale ?? 'Da definire',
     quantity: row.quantita,
-    priority: row.urgenza,
+    priority: ORDER_PRIORITIES.includes(row.urgenza) ? row.urgenza : 'standard',
     status: row.stato ?? 'sent',
     assignedAdmin: row.adminResponsabile ?? 'Da assegnare',
     createdAt: row.dataRichiesta,
@@ -133,6 +172,37 @@ async function verifyPassword(plainPassword: string, dbPassword: string | null):
   return plainPassword === dbPassword;
 }
 
+async function ensureDatabaseSchema(): Promise<void> {
+  await pool.query(`
+    alter table public.ordini
+      add column if not exists stato text not null default 'sent',
+      add column if not exists "adminResponsabile" text,
+      add column if not exists "dataAggiornamento" timestamp with time zone;
+  `);
+
+  await pool.query(`
+    alter table public."richiestePCTO"
+      add column if not exists stato text not null default 'sent',
+      add column if not exists "dataAggiornamento" timestamp with time zone;
+  `);
+}
+
+function assertOrderStatus(value: unknown): OrderStatus {
+  if (typeof value === 'string' && ORDER_STATUSES.includes(value as OrderStatus)) {
+    return value as OrderStatus;
+  }
+
+  throw new Error('Stato ordine non valido');
+}
+
+function assertPctoStatus(value: unknown): PctoStatus {
+  if (typeof value === 'string' && PCTO_STATUSES.includes(value as PctoStatus)) {
+    return value as PctoStatus;
+  }
+
+  throw new Error('Stato PCTO non valido');
+}
+
 function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
   const bearerToken = req.headers.authorization?.startsWith('Bearer ')
     ? req.headers.authorization.slice('Bearer '.length)
@@ -150,7 +220,7 @@ function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunctio
       return;
     }
 
-    req.user = payload as TokenPayload;
+    req.user = toTokenPayload(payload);
     res.cookie('TOKEN', createToken(req.user), cookieOptions);
     next();
   });
@@ -165,9 +235,45 @@ function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFuncti
   next();
 }
 
+function attachUserIfPresent(req: AuthenticatedRequest, _res: Response, next: NextFunction): void {
+  const bearerToken = req.headers.authorization?.startsWith('Bearer ')
+    ? req.headers.authorization.slice('Bearer '.length)
+    : undefined;
+  const token = req.cookies?.TOKEN ?? bearerToken;
+
+  if (!token) {
+    next();
+    return;
+  }
+
+  jwt.verify(token, jwtKey, (err: any, payload: any) => {
+    if (!err) {
+      req.user = toTokenPayload(payload);
+    }
+
+    next();
+  });
+}
+
 app.get('/api/health', async (_req, res) => {
   const result = await pool.query('select now() as now');
   res.send({ ok: true, dbTime: result.rows[0].now });
+});
+
+app.get('/api/supabase-test', async (_req, res) => {
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.from('admin').select('*').limit(5);
+
+    res.send({ data, error });
+  } catch (error: any) {
+    res.status(503).send({
+      data: null,
+      error: {
+        message: error?.message ?? 'Supabase non configurato',
+      },
+    });
+  }
 });
 
 app.post('/api/auth/login', async (req, res) => {
@@ -219,6 +325,26 @@ app.post('/api/auth/login', async (req, res) => {
     return;
   }
 
+  const studentResult = await pool.query(
+    'select "idStudente", nome, cognome, email, password from public.studenti where email = $1 limit 1',
+    [email],
+  );
+  const student = studentResult.rows[0];
+
+  if (student && (await verifyPassword(password, student.password))) {
+    const payload: TokenPayload = {
+      id: Number(student.idStudente),
+      email: student.email,
+      role: 'studente',
+      name: `${student.nome} ${student.cognome ?? ''}`.trim(),
+    };
+
+    const token = createToken(payload);
+    res.cookie('TOKEN', token, cookieOptions);
+    res.send({ token, user: payload });
+    return;
+  }
+
   res.status(401).send('Email o password non validi');
 });
 
@@ -248,6 +374,52 @@ app.post('/api/auth/register-company', async (req, res) => {
   res.status(201).send(result.rows[0]);
 });
 
+app.post('/api/auth/register-admin', async (req, res) => {
+  const passwordHash = await bcrypt.hash(String(req.body.password), 10);
+
+  const result = await pool.query(
+    `
+      insert into public.admin (nome, cognome, ruolo, "dataNascita", "numeroTelefono", email, password)
+      values ($1, $2, $3, $4, $5, $6, $7)
+      returning "idLavoratore", nome, cognome, ruolo, "dataNascita", "numeroTelefono", email
+    `,
+    [
+      req.body.nome,
+      req.body.cognome,
+      req.body.ruolo,
+      req.body.dataNascita ?? null,
+      req.body.numeroTelefono ?? null,
+      req.body.email,
+      passwordHash,
+    ],
+  );
+
+  res.status(201).send(result.rows[0]);
+});
+
+app.post('/api/auth/register-student', async (req, res) => {
+  const passwordHash = await bcrypt.hash(String(req.body.password), 10);
+
+  const result = await pool.query(
+    `
+      insert into public.studenti (nome, cognome, "numeroTelefono", email, citta, cap, password)
+      values ($1, $2, $3, $4, $5, $6, $7)
+      returning "idStudente", nome, cognome, "numeroTelefono", email, citta, cap
+    `,
+    [
+      req.body.nome,
+      req.body.cognome ?? null,
+      req.body.numeroTelefono,
+      req.body.email,
+      req.body.citta ?? null,
+      Number(req.body.cap),
+      passwordHash,
+    ],
+  );
+
+  res.status(201).send(result.rows[0]);
+});
+
 app.get('/api/orders', requireAuth, async (req: AuthenticatedRequest, res) => {
   const params: any[] = [];
   const where: string[] = [];
@@ -262,12 +434,9 @@ app.get('/api/orders', requireAuth, async (req: AuthenticatedRequest, res) => {
       select
         o.*,
         a."nomeAzienda",
-        null::text as materiale,
-        null::text as stato,
-        null::text as "adminResponsabile",
-        null::date as "dataAggiornamento"
+        a."emailAzienda"
       from public.ordini o
-      join public.aziende a on a."idAzienda" = o."idAzienda"
+      left join public.aziende a on a."idAzienda" = o."idAzienda"
       ${where.length ? `where ${where.join(' and ')}` : ''}
       order by o."dataRichiesta" desc, o.id desc
     `,
@@ -291,12 +460,9 @@ app.get('/api/orders/:id', requireAuth, async (req: AuthenticatedRequest, res) =
       select
         o.*,
         a."nomeAzienda",
-        null::text as materiale,
-        null::text as stato,
-        null::text as "adminResponsabile",
-        null::date as "dataAggiornamento"
+        a."emailAzienda"
       from public.ordini o
-      join public.aziende a on a."idAzienda" = o."idAzienda"
+      left join public.aziende a on a."idAzienda" = o."idAzienda"
       where ${where.join(' and ')}
       limit 1
     `,
@@ -319,13 +485,6 @@ app.post('/api/orders', requireAuth, async (req: AuthenticatedRequest, res) => {
     return;
   }
 
-  const notes = [
-    req.body.materiale ?? req.body.material ? `Materiale: ${req.body.materiale ?? req.body.material}` : '',
-    req.body.noteAggiuntive ?? req.body.notes ?? '',
-  ]
-    .filter(Boolean)
-    .join('\n');
-
   const result = await pool.query(
     `
       insert into public.ordini (
@@ -337,9 +496,10 @@ app.post('/api/orders', requireAuth, async (req: AuthenticatedRequest, res) => {
         "dataRichiesta",
         "dataConsegna",
         "noteAggiuntive",
-        quantita
+        quantita,
+        materiale
       )
-      values ($1, $2, $3, $4, $5, current_date, $6, $7, $8)
+      values ($1, $2, $3, $4, $5, current_date, $6, $7, $8, $9)
       returning *
     `,
     [
@@ -349,12 +509,47 @@ app.post('/api/orders', requireAuth, async (req: AuthenticatedRequest, res) => {
       req.body.urgenza ?? req.body.priority ?? 'standard',
       idAzienda,
       req.body.dataConsegna ?? null,
-      notes || null,
+      req.body.noteAggiuntive ?? req.body.notes ?? null,
       Number(req.body.quantita ?? req.body.quantity),
+      req.body.materiale ?? req.body.material,
     ],
   );
 
   res.status(201).send(normalizeOrder(result.rows[0]));
+});
+
+app.patch('/api/orders/:id/status', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res) => {
+  const status = assertOrderStatus(req.body.status);
+
+  const result = await pool.query(
+    `
+      update public.ordini
+      set stato = $1,
+          "adminResponsabile" = $2,
+          "dataAggiornamento" = current_timestamp
+      where id = $3
+      returning *
+    `,
+    [status, req.user?.name ?? 'Admin OMAT', req.params.id],
+  );
+
+  if (!result.rowCount) {
+    res.status(404).send('Ordine non trovato');
+    return;
+  }
+
+  const enriched = await pool.query(
+    `
+      select o.*, a."nomeAzienda", a."emailAzienda"
+      from public.ordini o
+      left join public.aziende a on a."idAzienda" = o."idAzienda"
+      where o.id = $1
+      limit 1
+    `,
+    [req.params.id],
+  );
+
+  res.send(normalizeOrder(enriched.rows[0]));
 });
 
 app.get('/api/pcto', requireAuth, requireAdmin, async (_req, res) => {
@@ -362,14 +557,14 @@ app.get('/api/pcto', requireAuth, requireAdmin, async (_req, res) => {
     `
       select
         r.*,
-        null::text as nome,
-        null::text as cognome,
-        null::text as email,
-        null::text as citta,
-        null::smallint as cap,
-        null::text as stato,
+        s.nome,
+        s.cognome,
+        s.email,
+        s.citta,
+        s.cap,
         r."dataInizio" as "createdAt"
       from public."richiestePCTO" r
+      left join public.studenti s on s."idStudente" = r."idStudente"
       order by r."dataInizio" desc, r.id desc
     `,
   );
@@ -382,14 +577,14 @@ app.get('/api/pcto/:id', requireAuth, requireAdmin, async (req, res) => {
     `
       select
         r.*,
-        null::text as nome,
-        null::text as cognome,
-        null::text as email,
-        null::text as citta,
-        null::smallint as cap,
-        null::text as stato,
+        s.nome,
+        s.cognome,
+        s.email,
+        s.citta,
+        s.cap,
         r."dataInizio" as "createdAt"
       from public."richiestePCTO" r
+      left join public.studenti s on s."idStudente" = r."idStudente"
       where r.id = $1
       limit 1
     `,
@@ -404,32 +599,89 @@ app.get('/api/pcto/:id', requireAuth, requireAdmin, async (req, res) => {
   res.send(normalizePcto(result.rows[0]));
 });
 
-app.post('/api/pcto', async (req, res) => {
+app.patch('/api/pcto/:id/status', requireAuth, requireAdmin, async (req, res) => {
+  const status = assertPctoStatus(req.body.status);
+
+  const result = await pool.query(
+    `
+      update public."richiestePCTO"
+      set stato = $1,
+          "dataAggiornamento" = current_timestamp
+      where id = $2
+      returning *
+    `,
+    [status, req.params.id],
+  );
+
+  if (!result.rowCount) {
+    res.status(404).send('Richiesta PCTO non trovata');
+    return;
+  }
+
+  const enriched = await pool.query(
+    `
+      select
+        r.*,
+        s.nome,
+        s.cognome,
+        s.email,
+        s.citta,
+        s.cap,
+        r."dataInizio" as "createdAt"
+      from public."richiestePCTO" r
+      left join public.studenti s on s."idStudente" = r."idStudente"
+      where r.id = $1
+      limit 1
+    `,
+    [req.params.id],
+  );
+
+  res.send(normalizePcto(enriched.rows[0]));
+});
+
+app.post('/api/pcto', attachUserIfPresent, async (req: AuthenticatedRequest, res) => {
   const client = await pool.connect();
 
   try {
     await client.query('begin');
 
-    const studentResult = await client.query(
-      `
-        insert into public.studenti (nome, cognome, "numeroTelefono", email, citta, cap)
-        values ($1, $2, $3, $4, $5, $6)
-        returning *
-      `,
-      [
-        req.body.nome ?? req.body.firstName,
-        req.body.cognome ?? req.body.lastName,
-        req.body.numeroTelefono ?? req.body.phone ?? 'Non indicato',
-        req.body.email,
-        req.body.citta ?? req.body.city ?? null,
-        Number(req.body.cap ?? req.body.postalCode),
-      ],
-    );
+    let student = null;
+
+    if (req.user?.role === 'studente') {
+      const studentResult = await client.query(
+        'select "idStudente", nome, cognome, "numeroTelefono", email, citta, cap from public.studenti where "idStudente" = $1 limit 1',
+        [req.user.id],
+      );
+      student = studentResult.rows[0];
+    } else {
+      const studentResult = await client.query(
+        `
+          insert into public.studenti (nome, cognome, "numeroTelefono", email, citta, cap, password)
+          values ($1, $2, $3, $4, $5, $6, $7)
+          returning *
+        `,
+        [
+          req.body.nome ?? req.body.firstName,
+          req.body.cognome ?? req.body.lastName,
+          req.body.numeroTelefono ?? req.body.phone ?? 'Non indicato',
+          req.body.email,
+          req.body.citta ?? req.body.city ?? null,
+          Number(req.body.cap ?? req.body.postalCode),
+          await bcrypt.hash(String(req.body.password ?? crypto.randomUUID()), 10),
+        ],
+      );
+      student = studentResult.rows[0];
+    }
+
+    if (!student) {
+      res.status(404).send('Studente non trovato');
+      return;
+    }
 
     const pctoResult = await client.query(
       `
-        insert into public."richiestePCTO" (scuola, classe, indirizzo, "dataInizio", "dataFine", motivazione)
-        values ($1, $2, $3, $4, $5, $6)
+        insert into public."richiestePCTO" (scuola, classe, indirizzo, "dataInizio", "dataFine", motivazione, "idStudente")
+        values ($1, $2, $3, $4, $5, $6, $7)
         returning *
       `,
       [
@@ -439,20 +691,21 @@ app.post('/api/pcto', async (req, res) => {
         req.body.dataInizio ?? req.body.startDate,
         req.body.dataFine ?? req.body.endDate,
         req.body.motivazione ?? req.body.motivation ?? null,
+        student.idStudente,
       ],
     );
 
     await client.query('commit');
 
     res.status(201).send({
-      student: studentResult.rows[0],
+      student,
       request: normalizePcto({
         ...pctoResult.rows[0],
-        nome: studentResult.rows[0].nome,
-        cognome: studentResult.rows[0].cognome,
-        email: studentResult.rows[0].email,
-        citta: studentResult.rows[0].citta,
-        cap: studentResult.rows[0].cap,
+        nome: student.nome,
+        cognome: student.cognome,
+        email: student.email,
+        citta: student.citta,
+        cap: student.cap,
       }),
     });
   } catch (err) {
@@ -468,17 +721,26 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).send(err?.message ?? 'Errore interno del server');
 });
 
-http.createServer(app).listen(HTTP_PORT, () => {
-  console.log(`Server HTTP in ascolto sulla porta ${HTTP_PORT}`);
-});
+async function startServer(): Promise<void> {
+  await ensureDatabaseSchema();
 
-if (fs.existsSync('keys/privateKey.pem') && fs.existsSync('keys/certificate.crt')) {
-  const credentials = {
-    key: fs.readFileSync('keys/privateKey.pem', 'utf8'),
-    cert: fs.readFileSync('keys/certificate.crt', 'utf8'),
-  };
-
-  https.createServer(credentials, app).listen(HTTPS_PORT, () => {
-    console.log(`Server HTTPS in ascolto sulla porta ${HTTPS_PORT}`);
+  http.createServer(app).listen(HTTP_PORT, () => {
+    console.log(`Server HTTP in ascolto sulla porta ${HTTP_PORT}`);
   });
+
+  if (fs.existsSync('keys/privateKey.pem') && fs.existsSync('keys/certificate.crt')) {
+    const credentials = {
+      key: fs.readFileSync('keys/privateKey.pem', 'utf8'),
+      cert: fs.readFileSync('keys/certificate.crt', 'utf8'),
+    };
+
+    https.createServer(credentials, app).listen(HTTPS_PORT, () => {
+      console.log(`Server HTTPS in ascolto sulla porta ${HTTPS_PORT}`);
+    });
+  }
 }
+
+startServer().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

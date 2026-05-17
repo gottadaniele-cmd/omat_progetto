@@ -197,6 +197,30 @@
   color: #be123c;
 }
 
+.action-stack button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.success-note,
+.error-note {
+  border-radius: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+}
+
+.success-note {
+  background: #ecfdf3;
+  color: #047857;
+}
+
+.error-note {
+  background: #fff1f2;
+  color: #be123c;
+}
+
 .missing-panel {
   text-align: center;
 }

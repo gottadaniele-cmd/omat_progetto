@@ -1,10 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ChiSiamoComponent } from '../chi-siamo/chi-siamo.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
-import { MOCK_ORDERS } from '../../core/data/admin-mock-data';
-import { ORDER_PRIORITY_LABELS } from '../../core/models/order.model';
+import { ORDER_PRIORITY_LABELS, OrderRequest, OrderStatus } from '../../core/models/order.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { OmatApiService } from '../../core/api/omat-api.service';
 
 @Component({
   selector: 'app-order-detail',
@@ -13,12 +13,61 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.css',
 })
-export class OrderDetailComponent {
+export class OrderDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly api = inject(OmatApiService);
   private readonly orderId = this.route.snapshot.paramMap.get('id');
 
   protected readonly priorityLabels = ORDER_PRIORITY_LABELS;
-  protected readonly order = computed(() => MOCK_ORDERS.find((item) => item.id === this.orderId));
+  protected readonly order = signal<OrderRequest | undefined>(undefined);
+  protected readonly statusMessage = signal('');
+  protected readonly actionError = signal('');
+  protected readonly isUpdating = signal(false);
+
+  ngOnInit(): void {
+    if (!this.orderId) {
+      return;
+    }
+
+    this.api.getOrder(this.orderId).subscribe({
+      next: (order) => this.order.set(order),
+      error: (error) => console.error(error),
+    });
+  }
+
+  protected updateStatus(status: OrderStatus): void {
+    const currentOrder = this.order();
+
+    if (!currentOrder || this.isUpdating()) {
+      return;
+    }
+
+    this.isUpdating.set(true);
+    this.statusMessage.set('');
+    this.actionError.set('');
+
+    this.api.updateOrderStatus(currentOrder.id, status).subscribe({
+      next: (order) => {
+        this.order.set(order);
+        this.statusMessage.set('Stato ordine aggiornato correttamente.');
+        this.isUpdating.set(false);
+      },
+      error: (error) => {
+        console.error(error);
+        this.actionError.set('Impossibile aggiornare lo stato ordine.');
+        this.isUpdating.set(false);
+      },
+    });
+  }
+
+  protected contactCustomer(email?: string): void {
+    if (!email) {
+      this.actionError.set('Email cliente non disponibile per questo ordine.');
+      return;
+    }
+
+    window.location.href = `mailto:${email}`;
+  }
 
   protected formatDate(value?: string): string {
     if (!value) {

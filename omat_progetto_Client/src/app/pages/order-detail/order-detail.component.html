@@ -106,9 +106,31 @@
           </dl>
 
           <div class="action-stack">
-            <button type="button">Aggiorna stato</button>
-            <button type="button" class="secondary">Contatta cliente</button>
+            <button type="button" [disabled]="isUpdating()" (click)="updateStatus('under-review')">
+              Prendi in valutazione
+            </button>
+            <button type="button" [disabled]="isUpdating()" (click)="updateStatus('approved')">
+              Approva lavoro
+            </button>
+            <button type="button" [disabled]="isUpdating()" (click)="updateStatus('in-production')">
+              Avvia produzione
+            </button>
+            <button type="button" [disabled]="isUpdating()" (click)="updateStatus('completed')">
+              Completa lavoro
+            </button>
+            <button type="button" class="danger" [disabled]="isUpdating()" (click)="updateStatus('rejected')">
+              Rifiuta lavoro
+            </button>
+            <button type="button" class="secondary" (click)="contactCustomer(order.customerEmail)">
+              Contatta cliente
+            </button>
           </div>
+          @if (statusMessage()) {
+            <p class="success-note">{{ statusMessage() }}</p>
+          }
+          @if (actionError()) {
+            <p class="error-note">{{ actionError() }}</p>
+          }
         </aside>
       </section>
     } @else {

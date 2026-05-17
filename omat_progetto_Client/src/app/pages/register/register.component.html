@@ -1,0 +1,128 @@
+<div class="background-blobs"></div>
+
+<main class="register-page">
+  <section class="register-heading">
+    <span class="eyebrow">OMAT iscrizione utenti</span>
+    <h1>{{ title() }}</h1>
+    <p>Scegli la tipologia di profilo e inserisci solo i dati necessari per quel ruolo.</p>
+  </section>
+
+  <a class="back-link" routerLink="/home">Ritorna alla Home ></a>
+  <section class="register-card glass-opaco">
+    <div class="role-switch" aria-label="Tipologia registrazione">
+      <button type="button" [class.active]="selectedType() === 'azienda'" (click)="selectType('azienda')">
+        Azienda
+      </button>
+      <button type="button" [class.active]="selectedType() === 'studente'" (click)="selectType('studente')">
+        Studente
+      </button>
+      <button type="button" [class.active]="selectedType() === 'admin'" (click)="selectType('admin')">
+        Admin
+      </button>
+    </div>
+
+    <form (ngSubmit)="submitRegister()">
+      @if (selectedType() === 'azienda') {
+        <div class="form-grid" [formGroup]="companyForm">
+          <label>
+            <span>Nome azienda</span>
+            <input type="text" formControlName="nomeAzienda" placeholder="Es. Meccanica Rossi S.r.l." />
+          </label>
+          <label>
+            <span>Email azienda</span>
+            <input type="email" formControlName="emailAzienda" placeholder="azienda@example.com" />
+          </label>
+          <label>
+            <span>Luogo</span>
+            <input type="text" formControlName="luogo" placeholder="Es. Cuneo" />
+          </label>
+          <label>
+            <span>Telefono</span>
+            <input type="tel" formControlName="contattoTelefonico" placeholder="+39 ..." />
+          </label>
+          <label class="wide-field">
+            <span>Password</span>
+            <input type="password" formControlName="password" placeholder="Minimo 6 caratteri" />
+          </label>
+        </div>
+      }
+
+      @if (selectedType() === 'studente') {
+        <div class="form-grid" [formGroup]="studentForm">
+          <label>
+            <span>Nome</span>
+            <input type="text" formControlName="nome" placeholder="Es. Luca" />
+          </label>
+          <label>
+            <span>Cognome</span>
+            <input type="text" formControlName="cognome" placeholder="Es. Ferrero" />
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" formControlName="email" placeholder="studente@example.com" />
+          </label>
+          <label>
+            <span>Telefono</span>
+            <input type="tel" formControlName="numeroTelefono" placeholder="+39 ..." />
+          </label>
+          <label>
+            <span>Citta</span>
+            <input type="text" formControlName="citta" placeholder="Es. Torino" />
+          </label>
+          <label>
+            <span>CAP</span>
+            <input type="text" inputmode="numeric" formControlName="cap" placeholder="Es. 10100" />
+          </label>
+          <label class="wide-field">
+            <span>Password</span>
+            <input type="password" formControlName="password" placeholder="Minimo 6 caratteri" />
+          </label>
+        </div>
+      }
+
+      @if (selectedType() === 'admin') {
+        <div class="form-grid" [formGroup]="adminForm">
+          <label>
+            <span>Nome</span>
+            <input type="text" formControlName="nome" placeholder="Es. Davide" />
+          </label>
+          <label>
+            <span>Cognome</span>
+            <input type="text" formControlName="cognome" placeholder="Es. Merlati" />
+          </label>
+          <label>
+            <span>Ruolo</span>
+            <input type="text" formControlName="ruolo" placeholder="Es. Responsabile produzione" />
+          </label>
+          <label>
+            <span>Data nascita</span>
+            <input type="date" formControlName="dataNascita" />
+          </label>
+          <label>
+            <span>Telefono</span>
+            <input type="tel" formControlName="numeroTelefono" placeholder="+39 ..." />
+          </label>
+          <label>
+            <span>Email</span>
+            <input type="email" formControlName="email" placeholder="admin@omat.it" />
+          </label>
+          <label class="wide-field">
+            <span>Password</span>
+            <input type="password" formControlName="password" placeholder="Minimo 6 caratteri" />
+          </label>
+        </div>
+      }
+
+      @if (submitError()) {
+        <p class="error-note">{{ submitError() }}</p>
+      }
+
+      @if (submitSuccess()) {
+        <p class="success-note">{{ submitSuccess() }}</p>
+      }
+
+      <button class="submit-button" type="button" (click)="submitRegister()">Crea account</button>
+      <p class="login-link">Hai gia un account? <a routerLink="/login">Accedi</a></p>
+    </form>
+  </section>
+</main>

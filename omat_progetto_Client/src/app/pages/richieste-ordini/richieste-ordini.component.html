@@ -27,9 +27,6 @@
         </div>
 
         <app-file-upload (filesChanged)="onFilesChanged($event)"></app-file-upload>
-        @if (submitted() && !uploadedFiles().length) {
-          <p class="field-error">Carica almeno un allegato tecnico prima di inviare la richiesta.</p>
-        }
       </section>
 
       <section class="order-panel">
@@ -126,9 +123,9 @@
           </div>
         </dl>
 
-        <button class="submit-button" type="submit">Invia richiesta</button>
+        <button class="submit-button" type="button" (click)="submitOrder()">Invia richiesta</button>
         @if (requestSent()) {
-          <p class="success-note">Richiesta pronta per l'invio API. I dati sono stati validati.</p>
+          <p class="success-note">Richiesta inviata correttamente. La trovi nella dashboard admin.</p>
         }
         @if (submitError()) {
           <p class="error-note">{{ submitError() }}</p>

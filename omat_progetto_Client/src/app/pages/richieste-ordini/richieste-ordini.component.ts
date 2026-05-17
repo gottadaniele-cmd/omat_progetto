@@ -69,7 +69,7 @@ export class RichiesteOrdiniComponent {
     this.requestSent.set(false);
     this.submitError.set('');
 
-    if (this.orderForm.invalid || !this.uploadedFiles().length) {
+    if (this.orderForm.invalid) {
       this.orderForm.markAllAsTouched();
       return;
     }
@@ -90,7 +90,20 @@ export class RichiesteOrdiniComponent {
     };
 
     this.api.createOrder(payload).subscribe({
-      next: () => this.requestSent.set(true),
+      next: () => {
+        this.requestSent.set(true);
+        this.orderForm.reset({
+          title: '',
+          customer: '',
+          material: '',
+          quantity: 1,
+          priority: 'standard',
+          description: '',
+          notes: '',
+        });
+        this.uploadedFiles.set([]);
+        this.submitted.set(false);
+      },
       error: (error) => {
         console.error(error);
         this.submitError.set(

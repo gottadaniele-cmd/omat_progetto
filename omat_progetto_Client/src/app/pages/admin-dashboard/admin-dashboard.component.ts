@@ -1,12 +1,12 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ChiSiamoComponent } from '../chi-siamo/chi-siamo.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
-import { ORDER_PRIORITY_LABELS, OrderStatus } from '../../core/models/order.model';
-import { PctoRequestStatus } from '../../core/models/pcto-request.model';
-import { MOCK_ORDERS, MOCK_PCTO_REQUESTS } from '../../core/data/admin-mock-data';
+import { ORDER_PRIORITY_LABELS, OrderRequest, OrderStatus } from '../../core/models/order.model';
+import { PctoRequest, PctoRequestStatus } from '../../core/models/pcto-request.model';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { OmatApiService } from '../../core/api/omat-api.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -15,9 +15,12 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css',
 })
-export class AdminDashboardComponent {
-  protected readonly orders = signal(MOCK_ORDERS);
-  protected readonly pctoRequests = signal(MOCK_PCTO_REQUESTS);
+export class AdminDashboardComponent implements OnInit {
+  private readonly api = inject(OmatApiService);
+
+  protected readonly orders = signal<OrderRequest[]>([]);
+  protected readonly pctoRequests = signal<PctoRequest[]>([]);
+  protected readonly loadError = signal('');
   protected readonly searchTerm = signal('');
   protected readonly statusFilter = signal<OrderStatus | 'all'>('all');
   protected readonly pctoSearchTerm = signal('');
@@ -82,11 +85,28 @@ export class AdminDashboardComponent {
     () => this.pctoRequests().filter((request) => request.status === 'approved').length,
   );
 
+  ngOnInit(): void {
+    this.api.getOrders().subscribe({
+      next: (orders) => this.orders.set(orders),
+      error: (error) => this.handleLoadError(error),
+    });
+
+    this.api.getPctoRequests().subscribe({
+      next: (requests) => this.pctoRequests.set(requests),
+      error: (error) => this.handleLoadError(error),
+    });
+  }
+
   protected formatDate(value: string): string {
     return new Intl.DateTimeFormat('it-IT', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
     }).format(new Date(value));
+  }
+
+  private handleLoadError(error: unknown): void {
+    console.error(error);
+    this.loadError.set('Impossibile caricare i dati dal server. Verifica login admin e backend.');
   }
 }

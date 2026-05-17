@@ -71,7 +71,8 @@ i,
 label,
 textarea,
 option,
-select {
+select,
+a {
     font-family: 'Jura', sans-serif;
 }
 
@@ -193,7 +194,6 @@ label {
     box-sizing: border-box;
     padding-bottom: 1.2rem;
 }
-
 
 
 
