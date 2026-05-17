@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+.angular/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.*
+
+# Cache
+.cache
+.vitepress/cache
+.vitepress/dist
