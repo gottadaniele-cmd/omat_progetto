@@ -72,7 +72,8 @@ label,
 textarea,
 option,
 select,
-a {
+a,
+strong {
     font-family: 'Jura', sans-serif;
 }
 

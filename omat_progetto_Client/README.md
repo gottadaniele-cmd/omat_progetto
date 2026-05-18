@@ -208,7 +208,7 @@ Express consente di costruire un backend leggero ma realistico, simile a quello 
 
 ---
 
-## 🗄️ Database (MongoDB / SQL)
+## 🗄️ Database (PostgreSQL)
 
 Il database viene utilizzato per la **persistenza dei dati**.
 

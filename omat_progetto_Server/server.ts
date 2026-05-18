@@ -173,6 +173,40 @@ async function verifyPassword(plainPassword: string, dbPassword: string | null):
 }
 
 async function ensureDatabaseSchema(): Promise<void> {
+  // Creazione tabelle se non esistono
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS public.ordini (
+      id SERIAL PRIMARY KEY,
+      "nomeProdotto" TEXT NOT NULL,
+      descrizione TEXT,
+      disegno TEXT,
+      urgenza TEXT DEFAULT 'standard',
+      "idAzienda" INTEGER,
+      "dataRichiesta" DATE DEFAULT CURRENT_DATE,
+      "dataConsegna" DATE,
+      "noteAggiuntive" TEXT,
+      quantita INTEGER DEFAULT 1,
+      materiale TEXT,
+      stato TEXT NOT NULL DEFAULT 'sent',
+      "adminResponsabile" TEXT,
+      "dataAggiornamento" TIMESTAMP WITH TIME ZONE
+    );
+
+    CREATE TABLE IF NOT EXISTS public."richiestePCTO" (
+      id SERIAL PRIMARY KEY,
+      scuola TEXT,
+      classe TEXT,
+      indirizzo TEXT,
+      "dataInizio" DATE,
+      "dataFine" DATE,
+      motivazione TEXT,
+      "idStudente" INTEGER,
+      stato TEXT NOT NULL DEFAULT 'sent',
+      "dataAggiornamento" TIMESTAMP WITH TIME ZONE
+    );
+  `);
+
+  // Aggiornamento colonne esistenti (per sicurezza)
   await pool.query(`
     alter table public.ordini
       add column if not exists stato text not null default 'sent',
@@ -210,13 +244,13 @@ function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunctio
   const token = req.cookies?.TOKEN ?? bearerToken;
 
   if (!token) {
-    res.status(403).send('Token mancante');
+    res.status(401).send('Token mancante');
     return;
   }
 
   jwt.verify(token, jwtKey, (err: any, payload: any) => {
     if (err) {
-      res.status(403).send('Token non valido o scaduto');
+      res.status(401).send('Token non valido o scaduto');
       return;
     }
 
@@ -427,6 +461,9 @@ app.get('/api/orders', requireAuth, async (req: AuthenticatedRequest, res) => {
   if (req.user?.role === 'azienda') {
     params.push(req.user.id);
     where.push(`o."idAzienda" = $${params.length}`);
+  } else if (req.user?.role !== 'admin') {
+    res.status(403).send('Permessi insufficienti per visualizzare gli ordini');
+    return;
   }
 
   const result = await pool.query(
@@ -478,44 +515,62 @@ app.get('/api/orders/:id', requireAuth, async (req: AuthenticatedRequest, res) =
 });
 
 app.post('/api/orders', requireAuth, async (req: AuthenticatedRequest, res) => {
-  const idAzienda = req.user?.role === 'azienda' ? req.user.id : Number(req.body.idAzienda);
+  try {
+    // Se è un'azienda usiamo il suo ID dal token, altrimenti cerchiamo idAzienda nel body
+    const idAzienda = req.user?.role === 'azienda' 
+      ? req.user.id 
+      : Number(req.body.idAzienda || req.body.customer);
 
-  if (!idAzienda) {
-    res.status(400).send('idAzienda mancante');
-    return;
+    if (!idAzienda || isNaN(idAzienda)) {
+      console.error("Errore validazione ordine: idAzienda mancante o non numerico", { body: req.body });
+      res.status(400).send('ID Azienda non valido. Seleziona un ID numerico valido.');
+      return;
+    }
+
+    const result = await pool.query(
+      `
+        insert into public.ordini (
+          "nomeProdotto",
+          descrizione,
+          disegno,
+          urgenza,
+          "idAzienda",
+          "dataRichiesta",
+          "dataConsegna",
+          "noteAggiuntive",
+          quantita,
+          materiale
+        )
+        values ($1, $2, $3, $4, $5, current_date, $6, $7, $8, $9)
+        returning *
+      `,
+      [
+        req.body.nomeProdotto ?? req.body.title,
+        req.body.descrizione ?? req.body.description,
+        req.body.disegno ?? req.body.attachments?.[0]?.fileName ?? null,
+        req.body.urgenza ?? req.body.priority ?? 'standard',
+        idAzienda,
+        req.body.dataConsegna ?? null,
+        req.body.noteAggiuntive ?? req.body.notes ?? null,
+        Number(req.body.quantita ?? req.body.quantity),
+        req.body.materiale ?? req.body.material,
+      ],
+    );
+
+    // Recuperiamo l'ordine appena creato con i dati dell'azienda joinati per la normalizeOrder
+    const enriched = await pool.query(
+      `select o.*, a."nomeAzienda", a."emailAzienda" 
+       from public.ordini o 
+       left join public.aziende a on a."idAzienda" = o."idAzienda" 
+       where o.id = $1`,
+      [result.rows[0].id]
+    );
+
+    res.status(201).send(normalizeOrder(enriched.rows[0]));
+  } catch (error) {
+    console.error("Errore salvataggio ordine:", error);
+    res.status(500).send("Errore durante il salvataggio dell'ordine");
   }
-
-  const result = await pool.query(
-    `
-      insert into public.ordini (
-        "nomeProdotto",
-        descrizione,
-        disegno,
-        urgenza,
-        "idAzienda",
-        "dataRichiesta",
-        "dataConsegna",
-        "noteAggiuntive",
-        quantita,
-        materiale
-      )
-      values ($1, $2, $3, $4, $5, current_date, $6, $7, $8, $9)
-      returning *
-    `,
-    [
-      req.body.nomeProdotto ?? req.body.title,
-      req.body.descrizione ?? req.body.description,
-      req.body.disegno ?? req.body.attachments?.[0]?.fileName ?? null,
-      req.body.urgenza ?? req.body.priority ?? 'standard',
-      idAzienda,
-      req.body.dataConsegna ?? null,
-      req.body.noteAggiuntive ?? req.body.notes ?? null,
-      Number(req.body.quantita ?? req.body.quantity),
-      req.body.materiale ?? req.body.material,
-    ],
-  );
-
-  res.status(201).send(normalizeOrder(result.rows[0]));
 });
 
 app.patch('/api/orders/:id/status', requireAuth, requireAdmin, async (req: AuthenticatedRequest, res) => {
@@ -654,23 +709,33 @@ app.post('/api/pcto', attachUserIfPresent, async (req: AuthenticatedRequest, res
       );
       student = studentResult.rows[0];
     } else {
-      const studentResult = await client.query(
-        `
-          insert into public.studenti (nome, cognome, "numeroTelefono", email, citta, cap, password)
-          values ($1, $2, $3, $4, $5, $6, $7)
-          returning *
-        `,
-        [
-          req.body.nome ?? req.body.firstName,
-          req.body.cognome ?? req.body.lastName,
-          req.body.numeroTelefono ?? req.body.phone ?? 'Non indicato',
-          req.body.email,
-          req.body.citta ?? req.body.city ?? null,
-          Number(req.body.cap ?? req.body.postalCode),
-          await bcrypt.hash(String(req.body.password ?? crypto.randomUUID()), 10),
-        ],
+      // Controlla se lo studente esiste già per email
+      const existingStudent = await client.query(
+        'SELECT * FROM public.studenti WHERE email = $1 LIMIT 1',
+        [req.body.email]
       );
-      student = studentResult.rows[0];
+
+      if ((existingStudent.rowCount ?? 0) > 0) {
+        student = existingStudent.rows[0];
+      } else {
+        const studentResult = await client.query(
+          `
+            insert into public.studenti (nome, cognome, "numeroTelefono", email, citta, cap, password)
+            values ($1, $2, $3, $4, $5, $6, $7)
+            returning *
+          `,
+          [
+            req.body.nome ?? req.body.firstName,
+            req.body.cognome ?? req.body.lastName,
+            req.body.numeroTelefono ?? req.body.phone ?? 'Non indicato',
+            req.body.email,
+            req.body.citta ?? req.body.city ?? null,
+            Number(req.body.cap ?? req.body.postalCode),
+            await bcrypt.hash(String(req.body.password ?? crypto.randomUUID()), 10),
+          ],
+        );
+        student = studentResult.rows[0];
+      }
     }
 
     if (!student) {

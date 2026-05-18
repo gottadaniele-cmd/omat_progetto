@@ -1,13 +1,14 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { startWith } from 'rxjs';
+import { map, startWith } from 'rxjs';
 import { ChiSiamoComponent } from '../chi-siamo/chi-siamo.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ORDER_PRIORITY_LABELS } from '../../core/models/order.model';
 import { OmatApiService } from '../../core/api/omat-api.service';
 import { FileUploadComponent } from '../../shared/components/file-upload/file-upload.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { AuthStateService } from '../../core/auth/auth-state.service';
 
 @Component({
   selector: 'app-richieste-ordini',
@@ -22,9 +23,10 @@ import { StatusBadgeComponent } from '../../shared/components/status-badge/statu
   templateUrl: './richieste-ordini.component.html',
   styleUrl: './richieste-ordini.component.css',
 })
-export class RichiesteOrdiniComponent {
+export class RichiesteOrdiniComponent implements OnInit {
   private readonly formBuilder = new FormBuilder();
   private readonly api = inject(OmatApiService);
+  private readonly auth = inject(AuthStateService);
 
   protected readonly uploadedFiles = signal<File[]>([]);
   protected readonly submitted = signal(false);
@@ -43,7 +45,10 @@ export class RichiesteOrdiniComponent {
   });
 
   private readonly orderFormValue = toSignal(
-    this.orderForm.valueChanges.pipe(startWith(this.orderForm.getRawValue())),
+    this.orderForm.valueChanges.pipe(
+      startWith(null),
+      map(() => this.orderForm.getRawValue()),
+    ),
     { initialValue: this.orderForm.getRawValue() },
   );
 
@@ -58,6 +63,14 @@ export class RichiesteOrdiniComponent {
       files: this.uploadedFiles().length,
     };
   });
+
+  ngOnInit(): void {
+    const currentUser = this.auth.user();
+    if (currentUser && currentUser.role === 'azienda') {
+      this.orderForm.controls.customer.setValue(currentUser.name);
+      this.orderForm.controls.customer.disable();
+    }
+  }
 
   protected onFilesChanged(files: File[]): void {
     this.uploadedFiles.set(files);
@@ -77,6 +90,7 @@ export class RichiesteOrdiniComponent {
     const value = this.orderForm.getRawValue();
     const payload = {
       title: value.title,
+      idAzienda: value.customer, // Se admin, qui dovrebbe esserci l'ID numerico
       material: value.material,
       description: value.description,
       priority: value.priority,
@@ -92,23 +106,22 @@ export class RichiesteOrdiniComponent {
     this.api.createOrder(payload).subscribe({
       next: () => {
         this.requestSent.set(true);
-        this.orderForm.reset({
-          title: '',
-          customer: '',
-          material: '',
-          quantity: 1,
-          priority: 'standard',
-          description: '',
-          notes: '',
-        });
+        // Reset del form mantenendo il valore del cliente se azienda
+        const customerValue = this.orderForm.controls.customer.value;
+        this.orderForm.reset();
+        this.orderForm.patchValue({ customer: customerValue, quantity: 1, priority: 'standard' });
         this.uploadedFiles.set([]);
         this.submitted.set(false);
       },
       error: (error) => {
         console.error(error);
-        this.submitError.set(
-          'Impossibile inviare la richiesta. Verifica di aver effettuato il login azienda.',
-        );
+        if (error.status === 401 || error.status === 403) {
+          this.submitError.set('Sessione scaduta o permessi insufficienti. Prova a rifare il login.');
+        } else if (error.status === 400) {
+          this.submitError.set('Dati dell\'ordine non validi. Controlla i campi inseriti.');
+        } else {
+          this.submitError.set('Errore del server. Riprova più tardi.');
+        }
       },
     });
   }

@@ -21,11 +21,13 @@ export class PctoComponent {
   protected readonly submitted = signal(false);
   protected readonly requestSent = signal(false);
   protected readonly submitError = signal('');
-  protected readonly savedEmail = 'nome.cognome@example.com';
+
+  public savedMail = ''
 
   protected readonly pctoForm = this.formBuilder.nonNullable.group({
     firstName: ['', [Validators.required, Validators.minLength(2)]],
     lastName: ['', [Validators.required, Validators.minLength(2)]],
+    email: ['', [Validators.required, Validators.email]],
     city: ['', Validators.required],
     postalCode: ['', [Validators.required, Validators.pattern(/^[0-9]{5}$/)]],
     school: ['', [Validators.required, Validators.minLength(3)]],
@@ -71,7 +73,7 @@ export class PctoComponent {
 
     const payload = {
       ...this.pctoForm.getRawValue(),
-      email: this.savedEmail,
+      email: this.pctoForm.getRawValue().email,
     };
 
     this.api.createPctoRequest(payload).subscribe({
